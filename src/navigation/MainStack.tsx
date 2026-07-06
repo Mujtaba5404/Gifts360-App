@@ -1,27 +1,24 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
 import SignInEmail from '../features/auth/SignInEmail';
-import Home from '../features/home/Home';
+import EditUser from '../features/admin/EditUser';
+import Users from '../features/admin/Users';
+import { UsersProvider } from '../features/admin/UsersContext';
 import BottomTabs from './BottomTabs';
-import Profile from '../features/auth/Profile';
+import { RootStackParamList } from './types';
 
-
-export type StackParamList = {
-  SignInEmail: undefined;
-  Home: undefined;
-  Profile: undefined;
-};
-
-const Stack = createNativeStackNavigator<StackParamList>();
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const MainStack: React.FC = () => {
-
   return (
-    <Stack.Navigator>
-      <Stack.Screen name="SignInEmail" component={SignInEmail} /> 
-      <Stack.Screen name="Home" component={BottomTabs} /> 
-      <Stack.Screen name="Profile" component={Profile} /> 
-    </Stack.Navigator>
+    <UsersProvider>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="SignInEmail" component={SignInEmail} />
+        <Stack.Screen name="Home" component={BottomTabs} />
+        <Stack.Screen name="Users" component={Users} />
+        <Stack.Screen name="EditUser" component={EditUser} />
+      </Stack.Navigator>
+    </UsersProvider>
   );
 };
 

@@ -1,26 +1,28 @@
-import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useState } from 'react';
-import { ActivityIndicator, Image, Keyboard, StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
+import {
+  Image,
+  Keyboard,
+  StyleSheet,
+  Text,
+  TouchableWithoutFeedback,
+  View,
+} from 'react-native';
 import { fontFamily } from '../../assets/Fonts';
 import images from '../../assets/Images';
-import CustomButton from '../../components/CustomButton';
-import CustomTextInput from '../../components/CustomTextInput';
-import { StackParamList } from '../../navigation/MainStack';
+import { CustomButton, CustomTextInput } from '../../components';
+import { RootStackParamList } from '../../navigation/types';
 import { height, width } from '../../utils';
 import { colors } from '../../utils/colors';
 import { fontSizes } from '../../utils/fontSizes';
 
-type Props = NativeStackScreenProps<StackParamList, 'SignInEmail'>;
+type Props = NativeStackScreenProps<RootStackParamList, 'SignInEmail'>;
 
 const MIN_PASSWORD_LENGTH = 6;
- 
-const SignInEmail = () => {
-  const navigation = useNavigation<NavigationProp<any>>();
-  const [loading, setLoading] = useState(false);
+
+const SignInEmail = ({ navigation }: Props) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
 
   const [emailTouched, setEmailTouched] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
@@ -29,22 +31,23 @@ const SignInEmail = () => {
   const isPasswordValid = password.length >= MIN_PASSWORD_LENGTH;
 
   const showEmailError = emailTouched && email.length > 0 && !isEmailValid;
-  const showPasswordError = passwordTouched && password.length > 0 && !isPasswordValid;
+  const showPasswordError =
+    passwordTouched && password.length > 0 && !isPasswordValid;
 
   const dismissKeyboard = () => {
     Keyboard.dismiss();
-  }
+  };
 
   const handleLogin = () => {
-  setEmailTouched(true);
-  setPasswordTouched(true);
+    setEmailTouched(true);
+    setPasswordTouched(true);
 
-  if (!isEmailValid || !isPasswordValid) {
-    return;
-  }
+    if (!isEmailValid || !isPasswordValid) {
+      return;
+    }
 
-  navigation.navigate('Home');
-};
+    navigation.navigate('Home');
+  };
 
   return (
     <TouchableWithoutFeedback onPress={dismissKeyboard}>
@@ -62,11 +65,13 @@ const SignInEmail = () => {
                 value={email}
                 onChangeText={setEmail}
                 onBlur={() => setEmailTouched(true)}
-                keyboardType='email-address'
-                autoCapitalize='none'
+                keyboardType="email-address"
+                autoCapitalize="none"
               />
               {showEmailError && (
-                <Text style={styles.errorText}>Please enter a valid email address.</Text>
+                <Text style={styles.errorText}>
+                  Please enter a valid email address.
+                </Text>
               )}
             </View>
 
@@ -80,7 +85,7 @@ const SignInEmail = () => {
                 value={password}
                 onChangeText={setPassword}
                 onBlur={() => setPasswordTouched(true)}
-                keyboardType='default'
+                keyboardType="default"
               />
               {showPasswordError && (
                 <Text style={styles.errorText}>
@@ -101,11 +106,6 @@ const SignInEmail = () => {
             </View>
           </View>
         </View>
-        {loading && (
-          <View style={styles.loaderOverlay}>
-            <ActivityIndicator size="large" color={colors.marhoon} />
-          </View>
-        )}
       </View>
     </TouchableWithoutFeedback>
   );
@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
   welcomeText: {
     fontFamily: fontFamily.UrbanistBold,
     fontSize: fontSizes.lg,
-    fontWeight: "700",
+    fontWeight: '700',
     color: colors.black,
     top: height * 0.08,
   },
@@ -139,50 +139,6 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.UrbanistMedium,
     marginTop: 4,
     marginLeft: width * 0.02,
-  },
-  belowMain: {
-    marginTop: height * 0.03,
-  },
-  continueImg: {
-    width: width * 0.8,
-    height: height * 0.15,
-    resizeMode: 'contain',
-  },
-  socialMain: {
-    flexDirection: 'row',
-    justifyContent: "center"
-  },
-  scialImg: {
-    width: width * 0.25,
-    height: height * 0.1,
-    resizeMode: 'contain',
-  },
-  memberMain: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: width * 0.01,
-  },
-  memberText: {
-    fontFamily: fontFamily.UrbanistMedium,
-    fontSize: fontSizes.sm2,
-    color: colors.black,
-  },
-  signUpText: {
-    fontFamily: fontFamily.UrbanistBold,
-    fontSize: fontSizes.sm2,
-    color: colors.marhoon,
-  },
-  loaderOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 9999,
   },
 });
 

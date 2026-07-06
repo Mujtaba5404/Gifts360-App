@@ -1,18 +1,172 @@
-import { NavigationProp, useNavigation } from '@react-navigation/native';
-import { StyleSheet, Text, View } from 'react-native';
- 
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Ionicons } from '@react-native-vector-icons/ionicons';
+import { ComponentProps } from 'react';
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { fontFamily } from '../../assets/Fonts';
+import { CustomButton, TopHeader } from '../../components';
+import { RootStackParamList } from '../../navigation/types';
+import { height, width } from '../../utils';
+import { colors } from '../../utils/colors';
+import { fontSizes } from '../../utils/fontSizes';
+
+type Nav = NativeStackNavigationProp<RootStackParamList>;
+type IconName = ComponentProps<typeof Ionicons>['name'];
+
+const MENU_ITEMS: { icon: IconName; label: string }[] = [
+  { icon: 'person-outline', label: 'Edit Profile' },
+  { icon: 'notifications-outline', label: 'Notifications' },
+  { icon: 'settings-outline', label: 'Settings' },
+  { icon: 'lock-closed-outline', label: 'Privacy' },
+  { icon: 'help-circle-outline', label: 'Help & Support' },
+];
+
 const Profile = () => {
-  const navigation = useNavigation<NavigationProp<any>>();
+  const navigation = useNavigation<Nav>();
+
+  const handleLogout = () => {
+    navigation.navigate('SignInEmail');
+  };
 
   return (
-    <View>
-        <Text>Hello</Text>
+    <View style={styles.container}>
+      <TopHeader text="Profile" />
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.content}
+      >
+        {/* Avatar + identity */}
+        <View style={styles.identity}>
+          <View style={styles.avatar}>
+            <Ionicons name="person" size={width * 0.12} color={colors.white} />
+          </View>
+          <Text style={styles.name}>Mujtaba</Text>
+          <Text style={styles.email}>mujtaba@gifts360.com</Text>
+        </View>
+
+        {/* Settings menu */}
+        <View style={styles.card}>
+          {MENU_ITEMS.map((item, index) => (
+            <TouchableOpacity
+              key={item.label}
+              activeOpacity={0.6}
+              style={[
+                styles.row,
+                index === MENU_ITEMS.length - 1 && styles.rowLast,
+              ]}
+            >
+              <View style={styles.rowIcon}>
+                <Ionicons
+                  name={item.icon}
+                  size={width * 0.05}
+                  color={colors.darkGreen}
+                />
+              </View>
+              <Text style={styles.rowLabel}>{item.label}</Text>
+              <Ionicons
+                name="chevron-forward"
+                size={width * 0.045}
+                color={colors.gray}
+              />
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Logout */}
+        <View style={styles.logout}>
+          <CustomButton
+            text="Log Out"
+            btnHeight={height * 0.05}
+            btnWidth={width * 0.85}
+            backgroundColor={colors.darkGreen}
+            textColor={colors.white}
+            onPress={handleLogout}
+          />
+        </View>
+      </ScrollView>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
- 
+  container: {
+    flex: 1,
+    backgroundColor: colors.white,
+  },
+  content: {
+    paddingHorizontal: width * 0.05,
+    paddingBottom: height * 0.04,
+  },
+  identity: {
+    alignItems: 'center',
+    marginTop: height * 0.02,
+    marginBottom: height * 0.035,
+  },
+  avatar: {
+    width: width * 0.24,
+    height: width * 0.24,
+    borderRadius: width * 0.12,
+    backgroundColor: colors.darkGreen,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  name: {
+    marginTop: height * 0.015,
+    fontSize: fontSizes.lg,
+    fontFamily: fontFamily.UrbanistBold,
+    fontWeight: '700',
+    color: colors.black,
+  },
+  email: {
+    marginTop: 4,
+    fontSize: fontSizes.sm,
+    fontFamily: fontFamily.UrbanistMedium,
+    color: colors.gray,
+  },
+  card: {
+    backgroundColor: colors.cardBg,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
+    overflow: 'hidden',
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: width * 0.04,
+    paddingVertical: height * 0.02,
+    paddingHorizontal: width * 0.04,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  rowLast: {
+    borderBottomWidth: 0,
+  },
+  rowIcon: {
+    width: width * 0.1,
+    height: width * 0.1,
+    borderRadius: width * 0.05,
+    backgroundColor: colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  rowLabel: {
+    flex: 1,
+    fontSize: fontSizes.sm2,
+    fontFamily: fontFamily.UrbanistMedium,
+    color: colors.black,
+  },
+  logout: {
+    marginTop: height * 0.04,
+    alignItems: 'center',
+  },
 });
 
 export default Profile;
