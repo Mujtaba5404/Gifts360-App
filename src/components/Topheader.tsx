@@ -247,17 +247,14 @@ const TopHeader: React.FC<TopHeaderProps> = ({
               )}
             </Pressable>
           )}
-          {/* {isMenu && (
-            <Pressable style={styles.headerArrow} onPress={handleDrawer}>
-              <View style={styles.DrawerImgContainer}>
-                <Image source={images.DrawerImg} style={styles.menuIcon} />
-              </View>
+          {isMenu && (
+            <Pressable style={styles.headerArrow}>
               <Image
                 source={images.drawerIcon}
                 style={styles.menuIcon}
               />
             </Pressable>
-          )} */}
+          )}
           <Text
             style={[
               styles.MainHeaderText,
