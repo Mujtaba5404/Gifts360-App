@@ -1,248 +1,178 @@
-// import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-// import { Image, View } from 'react-native';
-// import images from '../assets/Images';
-// import { height, width } from '../utils';
-// import { colors } from '../utils/colors';
-// import Home from '../features/home/Home';
-// import Profile from '../features/auth/Profile';
-
-// const Tab = createBottomTabNavigator();
-
-// const BottomTabs = () => {
-//   return (
-//     <Tab.Navigator
-//       screenOptions={{
-//         headerShown: false,
-//         tabBarShowLabel: false,
-//         tabBarStyle: {
-//           position: 'absolute',
-//           bottom: height * 0.05,
-//           width: width * 0.95,
-//           backgroundColor: colors.white,
-//           borderRadius: 30,
-//           height: height * 0.07,
-//           paddingBottom: height * 0.05,
-//           paddingTop: height * 0.015,
-//           elevation: 5,
-//         },
-//       }}
-//     >
-//       <Tab.Screen
-//         name="Home"
-//         component={Home}
-//         options={{
-//           tabBarIcon: ({ focused }) => (
-//             <View
-//               style={{
-//                 backgroundColor: focused ? colors.darkGreen : 'transparent',
-//                 padding: height * 0.015,
-//                 borderRadius: 50,
-//               }}
-//             >
-//               <Image
-//                 source={images.homeIcon}
-//                 style={{
-//                   width: 24,
-//                   height: 24,
-//                   resizeMode: 'contain',
-//                   tintColor: focused ? colors.white : colors.gray,
-//                 }}
-//               />
-//             </View>
-//           ),
-//         }}
-//       />
-
-//       {/* <Tab.Screen
-//         name="MediaLibrary"
-//         component={}
-//         options={{
-//           tabBarIcon: ({ focused }) => (
-//             <View
-//               style={{
-//                 backgroundColor: focused ? colors.marhoon : 'transparent',
-//                 padding: height * 0.015,
-//                 borderRadius: 50,
-//               }}
-//             >
-//               <Image
-//                 source={images.bottomTabSecIcon}
-//                 style={{
-//                   width: 24,
-//                   height: 24,
-//                   resizeMode: 'contain',
-//                   tintColor: focused ? colors.white : colors.Gray,
-//                 }}
-//               />
-//             </View>
-//           ),
-//         }}
-//       />
-
-//       <Tab.Screen
-//         name="ECommerce"
-//         component={}
-//         options={{
-//           tabBarIcon: ({ focused }) => (
-//             <View
-//               style={{
-//                 backgroundColor: focused ? colors.marhoon : 'transparent',
-//                 padding: height * 0.015,
-//                 borderRadius: 50,
-//               }}
-//             >
-//               <Image
-//                 source={images.eCommerceIcon}
-//                 style={{
-//                   width: 24,
-//                   height: 24,
-//                   resizeMode: 'contain',
-//                   tintColor: focused ? colors.white : colors.Gray,
-//                 }}
-//               />
-//             </View>
-//           ),
-//         }}
-//       />
-
-//       <Tab.Screen
-//         name="Chat"
-//         component={}
-//         options={{
-//           tabBarIcon: ({ focused }) => (
-//             <View
-//               style={{
-//                 backgroundColor: focused ? colors.marhoon : 'transparent',
-//                 padding: height * 0.015,
-//                 borderRadius: 50,
-//               }}
-//             >
-//               <Image
-//                 source={images.chatIcon}
-//                 style={{
-//                   width: 24,
-//                   height: 24,
-//                   resizeMode: 'contain',
-//                   tintColor: focused ? colors.lightGray : colors.Gray,
-//                 }}
-//               />
-//             </View>
-//           ),
-//         }}
-//       /> */}
-
-//       <Tab.Screen
-//         name="Profile"
-//         component={Profile}
-//         options={{
-//           tabBarIcon: ({ focused }) => (
-//             <View
-//               style={{
-//                 backgroundColor: focused ? colors.darkGreen : 'transparent',
-//                 padding: 10,
-//                 borderRadius: 50,
-//               }}
-//             >
-//               <Image
-//                 source={images.profileIcon}
-//                 style={{
-//                   width: 24,
-//                   height: 24,
-//                   resizeMode: 'contain',
-//                   tintColor: focused ? colors.white : colors.gray,
-//                 }}
-//               />
-//             </View>
-//           ),
-//         }}
-//       />
-//     </Tab.Navigator>
-//   );
-// };
-
-// export default BottomTabs;
-
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Image, View } from 'react-native';
+import {
+  BottomTabBarProps,
+  createBottomTabNavigator,
+} from '@react-navigation/bottom-tabs';
+import { Ionicons } from '@react-native-vector-icons/ionicons';
+import { ReactNode, useEffect, useRef } from 'react';
+import {
+  Animated,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import images from '../assets/Images';
+import AdminSettings from '../features/admin/AdminSettings';
+import Profile from '../features/auth/Profile';
+import Home from '../features/home/Home';
 import { width } from '../utils';
 import { colors } from '../utils/colors';
-import Home from '../features/home/Home';
-import Profile from '../features/auth/Profile';
 
 const Tab = createBottomTabNavigator();
 
-// Facebook jaisa active/inactive color
-const ACTIVE_COLOR = colors.darkGreen; // FB me ye #1877F2 hota hai, apni brand color rakh lo
+// Active / inactive tab colors
+const ACTIVE_COLOR = colors.darkGreen;
 const INACTIVE_COLOR = colors.gray;
 
-const TabIcon = ({ focused, icon }) => (
-  <View style={{ alignItems: 'center', justifyContent: 'center', width: width * 0.18 }}>
-    {/* Active indicator line - FB style */}
-    <View
-      style={{
-        height: 3,
-        width: '50%',
-        backgroundColor: focused ? ACTIVE_COLOR : 'transparent',
-        borderRadius: 2,
-        marginBottom: 6,
-      }}
-    />
+const ICON_SIZE = 26;
+
+// Icon renderer per route. Home/Profile use the existing PNG assets (tinted),
+// AdminSettings uses a vector icon since it has no image asset.
+const TAB_ICONS: Record<string, (color: string) => ReactNode> = {
+  Home: color => (
     <Image
-      source={icon}
-      style={{
-        width: 26,
-        height: 26,
-        resizeMode: 'contain',
-        tintColor: focused ? ACTIVE_COLOR : INACTIVE_COLOR,
-      }}
+      source={images.homeIcon}
+      style={[styles.icon, { tintColor: color }]}
     />
-  </View>
-);
+  ),
+  Profile: color => (
+    <Image
+      source={images.profileIcon}
+      style={[styles.icon, { tintColor: color }]}
+    />
+  ),
+  AdminSettings: color => (
+    <Ionicons name="settings" size={ICON_SIZE} color={color} />
+  ),
+};
+
+// Fraction of a tab slot the sliding indicator line occupies.
+const INDICATOR_RATIO = 0.4;
+
+/**
+ * Custom bottom tab bar with a single indicator line that smoothly slides
+ * between tabs as the active route changes.
+ */
+const AnimatedTabBar = ({ state, navigation }: BottomTabBarProps) => {
+  const insets = useSafeAreaInsets();
+
+  const tabCount = state.routes.length;
+  const tabWidth = width / tabCount;
+  const indicatorWidth = tabWidth * INDICATOR_RATIO;
+
+  // Where the indicator sits (left edge) for a given tab index.
+  const offsetFor = (index: number) =>
+    index * tabWidth + (tabWidth - indicatorWidth) / 2;
+
+  // Initialise at the active tab so there's no jump on first render.
+  const translateX = useRef(new Animated.Value(offsetFor(state.index))).current;
+
+  useEffect(() => {
+    Animated.spring(translateX, {
+      toValue: offsetFor(state.index),
+      useNativeDriver: true,
+      friction: 8,
+      tension: 70,
+    }).start();
+    // offsetFor depends only on tabWidth/indicatorWidth (derived from width).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.index, tabWidth, indicatorWidth]);
+
+  return (
+    <View style={[styles.bar, { paddingBottom: insets.bottom }]}>
+      <Animated.View
+        style={[
+          styles.indicator,
+          { width: indicatorWidth, transform: [{ translateX }] },
+        ]}
+      />
+      {state.routes.map((route, index) => {
+        const isFocused = state.index === index;
+
+        const onPress = () => {
+          const event = navigation.emit({
+            type: 'tabPress',
+            target: route.key,
+            canPreventDefault: true,
+          });
+
+          if (!isFocused && !event.defaultPrevented) {
+            navigation.navigate(route.name);
+          }
+        };
+
+        const onLongPress = () => {
+          navigation.emit({ type: 'tabLongPress', target: route.key });
+        };
+
+        return (
+          <TouchableOpacity
+            key={route.key}
+            accessibilityRole="button"
+            accessibilityState={isFocused ? { selected: true } : {}}
+            style={[styles.tab, { width: tabWidth }]}
+            onPress={onPress}
+            onLongPress={onLongPress}
+            activeOpacity={0.7}
+          >
+            {TAB_ICONS[route.name]?.(
+              isFocused ? ACTIVE_COLOR : INACTIVE_COLOR,
+            )}
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+};
 
 const BottomTabs = () => {
   return (
     <Tab.Navigator
-      screenOptions={{
-        headerShown: false,
-        tabBarShowLabel: false,
-        tabBarStyle: {
-          position: 'relative',
-          backgroundColor: colors.white,
-          borderTopWidth: 0.5,
-          borderTopColor: '#E4E6EB',
-          height: 55,
-          paddingTop: 0,
-          paddingBottom: 0,
-          elevation: 8,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: -1 },
-          shadowOpacity: 0.05,
-          shadowRadius: 3,
-        },
-      }}
+      screenOptions={{ headerShown: false }}
+      // react-navigation *calls* tabBar as a function, so the hook-using
+      // component must be rendered as an element (not passed by reference),
+      // otherwise its hooks run outside a render → "Invalid hook call".
+      // AnimatedTabBar is module-scoped, so this arrow is stable in practice.
+      // eslint-disable-next-line react/no-unstable-nested-components
+      tabBar={props => <AnimatedTabBar {...props} />}
     >
-      <Tab.Screen
-        name="Home"
-        component={Home}
-        options={{
-          tabBarIcon: ({ focused }) => (
-            <TabIcon focused={focused} icon={images.homeIcon} />
-          ),
-        }}
-      />
-
-      <Tab.Screen
-        name="Profile"
-        component={Profile}
-        options={{
-          tabBarIcon: ({ focused }) => (
-            <TabIcon focused={focused} icon={images.profileIcon} />
-          ),
-        }}
-      />
+      <Tab.Screen name="Home" component={Home} />
+      <Tab.Screen name="AdminSettings" component={AdminSettings} />
+      <Tab.Screen name="Profile" component={Profile} />
     </Tab.Navigator>
   );
 };
+
+const styles = StyleSheet.create({
+  bar: {
+    flexDirection: 'row',
+    backgroundColor: colors.white,
+    borderTopWidth: 0.5,
+    borderTopColor: '#E4E6EB',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+  },
+  indicator: {
+    position: 'absolute',
+    top: 0,
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: ACTIVE_COLOR,
+  },
+  tab: {
+    height: 55,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  icon: {
+    width: 26,
+    height: 26,
+    resizeMode: 'contain',
+  },
+});
 
 export default BottomTabs;
