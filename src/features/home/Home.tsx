@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     ImageBackground,
     ScrollView,
@@ -9,15 +9,24 @@ import {
 
 import { fontFamily } from '../../assets/Fonts';
 import images from '../../assets/Images';
-import { TopHeader } from '../../components';
+import { SideDrawer, TopHeader } from '../../components';
 import { height, width } from '../../utils';
 import { colors } from '../../utils/colors';
 import { fontSizes } from '../../utils/fontSizes';
 
 const Home = () => {
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
   return (
     <View style={{ flex: 1, marginBottom: height * 0.07 }}>
-      <TopHeader isMenu isProfile notification />
+      <TopHeader
+        isMenu
+        isProfile
+        notification
+        onMenuPress={() => setDrawerOpen(true)}
+      />
+
+      <SideDrawer visible={drawerOpen} onClose={() => setDrawerOpen(false)} />
 
       <ImageBackground source={images.background} style={{ flex: 1 }}>
         <ScrollView showsVerticalScrollIndicator={false}>

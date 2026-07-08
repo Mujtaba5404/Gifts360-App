@@ -1,14 +1,15 @@
 import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@react-native-vector-icons/ionicons';
 import React, { useState } from 'react';
 import {
-    Image,
-    Platform,
-    Pressable,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Image,
+  Platform,
+  Pressable,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { fontFamily } from '../assets/Fonts';
 import images from '../assets/Images';
@@ -62,6 +63,7 @@ interface TopHeaderProps {
   isCart?: boolean;
   isBackHome?: boolean;
   isCross?: boolean;
+  onMenuPress?: () => void;
 }
 
 // type DrawerNavProp = DrawerNavigationProp<any>;
@@ -98,20 +100,21 @@ const TopHeader: React.FC<TopHeaderProps> = ({
   isCart = false,
   isBackHome = false,
   isCross = false,
+  onMenuPress,
 }) => {
   const [imgError, setImgError] = useState(false);
   const [notiCount, setNotiCount] = useState(0)
-//   const drawerNavigation = useNavigation<DrawerNavProp>();
+  //   const drawerNavigation = useNavigation<DrawerNavProp>();
   const navigation = useNavigation<any>();
-//   const User = useSelector((state: RootState) => state.role.user)
-//   const fullName = User?.firstName && User?.lastName ? `${User.firstName} ${User.lastName}` : "Name";
-//   const displayName = fullName.length > 10 ? `${fullName.slice(0, 8)}...` : fullName;
-//   const { count, refreshCount } = useNotificationCount();
+  //   const User = useSelector((state: RootState) => state.role.user)
+  //   const fullName = User?.firstName && User?.lastName ? `${User.firstName} ${User.lastName}` : "Name";
+  //   const displayName = fullName.length > 10 ? `${fullName.slice(0, 8)}...` : fullName;
+  //   const { count, refreshCount } = useNotificationCount();
 
-//   const handleDrawer = () => {
-//     drawerNavigation.openDrawer();
-//     console.log("Drawer Icon Clicked!")
-//   };
+  //   const handleDrawer = () => {
+  //     drawerNavigation.openDrawer();
+  //     console.log("Drawer Icon Clicked!")
+  //   };
 
   const handleFavouritePress = async () => {
     if (!onFavouritePress || (!videoId && !productId)) {
@@ -133,13 +136,13 @@ const TopHeader: React.FC<TopHeaderProps> = ({
     return `${BASE_URL}${path}`;
   };
 
-//   useEffect(() => {
-//     const unsubscribe = navigation.addListener('focus', () => {
-//       refreshCount();
-//     });
-//     refreshCount();
-//     return unsubscribe;
-//   }, [navigation, refreshCount]);
+  //   useEffect(() => {
+  //     const unsubscribe = navigation.addListener('focus', () => {
+  //       refreshCount();
+  //     });
+  //     refreshCount();
+  //     return unsubscribe;
+  //   }, [navigation, refreshCount]);
 
   return (
     <View
@@ -247,17 +250,14 @@ const TopHeader: React.FC<TopHeaderProps> = ({
               )}
             </Pressable>
           )}
-          {/* {isMenu && (
-            <Pressable style={styles.headerArrow} onPress={handleDrawer}>
-              <View style={styles.DrawerImgContainer}>
-                <Image source={images.DrawerImg} style={styles.menuIcon} />
-              </View>
+          {isMenu && (
+            <Pressable style={styles.headerArrow} onPress={onMenuPress}>
               <Image
                 source={images.drawerIcon}
                 style={styles.menuIcon}
               />
             </Pressable>
-          )} */}
+          )}
           <Text
             style={[
               styles.MainHeaderText,
@@ -694,7 +694,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderColor: colors.white,
   },
-  bellImgContainer:{
+  bellImgContainer: {
     borderWidth: 2,
     borderRadius: 200,
     height: height * 0.042,

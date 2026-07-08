@@ -5,30 +5,30 @@ import { TopHeader } from '../../components';
 import { RootStackParamList } from '../../navigation/types';
 import { colors } from '../../utils/colors';
 import { fontSizes } from '../../utils/fontSizes';
-import UserForm from './UserForm';
-import { useUsers } from './UsersContext';
+import RoleForm from './RoleForm';
+import { useRoles } from './RolesContext';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'EditUser'>;
+type Props = NativeStackScreenProps<RootStackParamList, 'EditRole'>;
 
-const EditUser = ({ route, navigation }: Props) => {
-  const { userId } = route.params;
-  const { users, updateUser } = useUsers();
-  const existing = users.find(user => user.id === userId);
+const EditRole = ({ route, navigation }: Props) => {
+  const { roleId } = route.params;
+  const { roles, updateRole } = useRoles();
+  const existing = roles.find(role => role.id === roleId);
 
   return (
     <View style={styles.container}>
-      <TopHeader text="Edit User" isBack />
+      <TopHeader text="Edit Role" isBack />
       {existing ? (
-        <UserForm
+        <RoleForm
           initialValues={existing}
           submitLabel="Save"
           onSubmit={values => {
-            updateUser(userId, values);
+            updateRole(roleId, values);
             navigation.goBack();
           }}
         />
       ) : (
-        <Text style={styles.missing}>User not found.</Text>
+        <Text style={styles.missing}>Role not found.</Text>
       )}
     </View>
   );
@@ -48,4 +48,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default EditUser;
+export default EditRole;
