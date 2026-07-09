@@ -12,4 +12,5 @@ export type RootStackParamList = {
   Roles: undefined;
   CreateRole: undefined;
   EditRole: { roleId: string };
+  ChangePasswordScreen: undefined;
 };

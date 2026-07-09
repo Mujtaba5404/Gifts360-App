@@ -20,11 +20,10 @@ type Nav = NativeStackNavigationProp<RootStackParamList>;
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
 const MENU_ITEMS: { icon: IconName; label: string }[] = [
-  { icon: 'person-outline', label: 'Edit Profile' },
-  { icon: 'notifications-outline', label: 'Notifications' },
-  { icon: 'settings-outline', label: 'Settings' },
-  { icon: 'lock-closed-outline', label: 'Privacy' },
-  { icon: 'help-circle-outline', label: 'Help & Support' },
+  // { icon: 'person-outline', label: 'Edit Profile' },
+  // { icon: 'notifications-outline', label: 'Notifications' },
+  // { icon: 'settings-outline', label: 'Settings' },
+  { icon: 'lock-closed-outline', label: 'Change Password' },
 ];
 
 const Profile = () => {
@@ -66,7 +65,7 @@ const Profile = () => {
                 <Ionicons
                   name={item.icon}
                   size={width * 0.05}
-                  color={colors.darkGreen}
+                  color={colors.mantineBlue}
                 />
               </View>
               <Text style={styles.rowLabel}>{item.label}</Text>
@@ -79,13 +78,12 @@ const Profile = () => {
           ))}
         </View>
 
-        {/* Logout */}
         <View style={styles.logout}>
           <CustomButton
             text="Log Out"
             btnHeight={height * 0.05}
             btnWidth={width * 0.85}
-            backgroundColor={colors.darkGreen}
+            backgroundColor={colors.mantineBlue}
             textColor={colors.white}
             onPress={handleLogout}
           />
@@ -113,7 +111,7 @@ const styles = StyleSheet.create({
     width: width * 0.24,
     height: width * 0.24,
     borderRadius: width * 0.12,
-    backgroundColor: colors.darkGreen,
+    backgroundColor: colors.mantineBlue,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -164,7 +162,7 @@ const styles = StyleSheet.create({
     color: colors.black,
   },
   logout: {
-    marginTop: height * 0.04,
+    top: height * 0.4,
     alignItems: 'center',
   },
 });

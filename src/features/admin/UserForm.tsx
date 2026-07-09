@@ -154,7 +154,7 @@ const UserForm = ({ initialValues, submitLabel, onSubmit }: UserFormProps) => {
           <Switch
             value={isActive}
             onValueChange={setIsActive}
-            trackColor={{ true: colors.darkGreen, false: colors.lightGray }}
+            trackColor={{ true: colors.mantineBlue, false: colors.lightGray }}
             thumbColor={colors.white}
           />
           <Text style={styles.switchLabel}>Is Active</Text>
@@ -166,7 +166,7 @@ const UserForm = ({ initialValues, submitLabel, onSubmit }: UserFormProps) => {
           text={submitLabel}
           btnHeight={height * 0.065}
           btnWidth={width * 0.9}
-          backgroundColor={colors.darkGreen}
+          backgroundColor={colors.mantineBlue}
           textColor={colors.white}
           borderRadius={12}
           onPress={handleSubmit}

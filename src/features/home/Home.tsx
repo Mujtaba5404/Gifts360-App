@@ -13,6 +13,7 @@ import { SideDrawer, TopHeader } from '../../components';
 import { height, width } from '../../utils';
 import { colors } from '../../utils/colors';
 import { fontSizes } from '../../utils/fontSizes';
+import PnlCard from '../../components/PnlCard';
 
 const Home = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -34,6 +35,8 @@ const Home = () => {
           <Text style={styles.welcome}>
             Welcome Mujtaba
           </Text>
+
+          <PnlCard />
 
           <View style={{ height: height * 0.08 }} />
         </ScrollView>

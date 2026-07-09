@@ -27,6 +27,7 @@ const MainStack: React.FC = () => {
           <Stack.Screen name="Roles" component={Roles} />
           <Stack.Screen name="CreateRole" component={CreateRole} />
           <Stack.Screen name="EditRole" component={EditRole} />
+          {/* <Stack.Screen name="ChangePasswordScreen" component={ChangePasswordScreen} /> */}
         </Stack.Navigator>
       </RolesProvider>
     </UsersProvider>

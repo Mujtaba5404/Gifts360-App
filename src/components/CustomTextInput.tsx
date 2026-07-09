@@ -67,7 +67,7 @@ const CustomTextInput: React.FC<CustomTextInputProps> = ({
           width: inputWidth,
           borderWidth,
           borderRadius,
-          borderColor: isActive ? colors.darkGreen : colors.lightGray,
+          borderColor: isActive ? colors.mantineBlue : colors.lightGray,
           backgroundColor: colors.white,
         },
       ]}
@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     color: colors.black,
     fontFamily: fontFamily.GilroyMedium,
-    fontSize: fontSizes.xsm
+    fontSize: fontSizes.xsm,
   },
   leftIcon: {
     marginRight: 10,

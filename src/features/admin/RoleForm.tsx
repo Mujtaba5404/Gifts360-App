@@ -31,12 +31,13 @@ interface RoleFormProps {
 // Placeholder option sets (replace with real data when the backend is wired).
 const SCOPE_OPTIONS = ['Global', 'Brand', 'Organization'];
 const PERMISSION_RESOURCES = ['BoxSpecification', 'BoxStyle', 'Brand'];
-const PERMISSION_ACTIONS: { key: keyof ResourcePermissions; label: string }[] = [
-  { key: 'create', label: 'Create' },
-  { key: 'view', label: 'View' },
-  { key: 'update', label: 'Update' },
-  { key: 'delete', label: 'Delete' },
-];
+const PERMISSION_ACTIONS: { key: keyof ResourcePermissions; label: string }[] =
+  [
+    { key: 'create', label: 'Create' },
+    { key: 'view', label: 'View' },
+    { key: 'update', label: 'Update' },
+    { key: 'delete', label: 'Delete' },
+  ];
 
 const buildPermissions = (
   initial?: Record<string, ResourcePermissions>,
@@ -158,7 +159,7 @@ const RoleForm = ({ initialValues, submitLabel, onSubmit }: RoleFormProps) => {
           text={submitLabel}
           btnHeight={height * 0.065}
           btnWidth={width * 0.9}
-          backgroundColor={colors.darkGreen}
+          backgroundColor={colors.mantineBlue}
           textColor={colors.white}
           borderRadius={12}
           onPress={handleSubmit}

@@ -8,17 +8,17 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
+import Toast from 'react-native-toast-message';
 import { fontFamily } from '../../assets/Fonts';
 import images from '../../assets/Images';
 import { CustomButton, CustomTextInput } from '../../components';
+import { useSignIn } from '../../api/useSignIn';
 import { RootStackParamList } from '../../navigation/types';
 import { height, width } from '../../utils';
 import { colors } from '../../utils/colors';
 import { fontSizes } from '../../utils/fontSizes';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SignInEmail'>;
-
-const MIN_PASSWORD_LENGTH = 6;
 
 const SignInEmail = ({ navigation }: Props) => {
   const [email, setEmail] = useState('');
@@ -27,26 +27,43 @@ const SignInEmail = ({ navigation }: Props) => {
   const [emailTouched, setEmailTouched] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
 
+  const { signIn, isPending } = useSignIn();
+
   const isEmailValid = email.includes('@');
-  const isPasswordValid = password.length >= MIN_PASSWORD_LENGTH;
 
   const showEmailError = emailTouched && email.length > 0 && !isEmailValid;
-  const showPasswordError =
-    passwordTouched && password.length > 0 && !isPasswordValid;
 
   const dismissKeyboard = () => {
     Keyboard.dismiss();
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     setEmailTouched(true);
     setPasswordTouched(true);
 
-    if (!isEmailValid || !isPasswordValid) {
-      return;
-    }
+    try {
+      const response = await signIn({
+        body: {
+          email,
+          password,
+        },
+      });
+      console.log(response);
 
-    navigation.navigate('Home');
+      Toast.show({
+        type: 'success',
+        text1: 'Success',
+        text2: response?.message || 'Signed in successfully',
+      });
+
+      navigation.navigate('Home');
+    } catch (error: any) {
+      Toast.show({
+        type: 'error',
+        text1: 'Sign in failed',
+        text2: error?.message || 'Something went wrong. Please try again.',
+      });
+    }
   };
 
   return (
@@ -87,21 +104,18 @@ const SignInEmail = ({ navigation }: Props) => {
                 onBlur={() => setPasswordTouched(true)}
                 keyboardType="default"
               />
-              {showPasswordError && (
-                <Text style={styles.errorText}>
-                  Password must be at least {MIN_PASSWORD_LENGTH} characters.
-                </Text>
-              )}
             </View>
 
             <View style={{ alignItems: 'center', top: height * 0.04 }}>
               <CustomButton
                 btnHeight={height * 0.05}
                 btnWidth={width * 0.85}
-                text="Login"
-                backgroundColor={colors.darkGreen}
+                text={isPending ? 'Signing in...' : 'Login'}
+                backgroundColor={colors.mantineBlue}
                 textColor={colors.white}
-                onPress={handleLogin}
+                // onPress={handleLogin}
+                onPress={() => navigation.navigate('Home')}
+                disabled={isPending}
               />
             </View>
           </View>

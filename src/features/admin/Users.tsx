@@ -1,7 +1,13 @@
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@react-native-vector-icons/ionicons';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { fontFamily } from '../../assets/Fonts';
 import { CustomButton, TopHeader } from '../../components';
 import { RootStackParamList } from '../../navigation/types';
@@ -31,12 +37,16 @@ const Users = () => {
           btnHeight={height * 0.06}
           btnWidth={width * 0.9}
           backgroundColor="transparent"
-          textColor={colors.darkGreen}
-          borderColor={colors.darkGreen}
+          textColor={colors.mantineBlue}
+          borderColor={colors.mantineBlue}
           borderWidth={1}
           borderRadius={8}
           leftIcon={
-            <Ionicons name="add" size={width * 0.06} color={colors.darkGreen} />
+            <Ionicons
+              name="add"
+              size={width * 0.06}
+              color={colors.mantineBlue}
+            />
           }
         />
 
@@ -113,7 +123,7 @@ const styles = StyleSheet.create({
     width: width * 0.12,
     height: width * 0.12,
     borderRadius: width * 0.06,
-    backgroundColor: colors.darkGreen,
+    backgroundColor: colors.mantineBlue,
     alignItems: 'center',
     justifyContent: 'center',
   },

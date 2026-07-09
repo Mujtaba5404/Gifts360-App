@@ -21,14 +21,11 @@ import { colors } from '../utils/colors';
 
 const Tab = createBottomTabNavigator();
 
-// Active / inactive tab colors
-const ACTIVE_COLOR = colors.darkGreen;
+const ACTIVE_COLOR = colors.mantineBlue;
 const INACTIVE_COLOR = colors.gray;
 
 const ICON_SIZE = 26;
 
-// Icon renderer per route. Home/Profile use the existing PNG assets (tinted),
-// AdminSettings uses a vector icon since it has no image asset.
 const TAB_ICONS: Record<string, (color: string) => ReactNode> = {
   Home: color => (
     <Image
@@ -47,13 +44,8 @@ const TAB_ICONS: Record<string, (color: string) => ReactNode> = {
   ),
 };
 
-// Fraction of a tab slot the sliding indicator line occupies.
 const INDICATOR_RATIO = 0.4;
 
-/**
- * Custom bottom tab bar with a single indicator line that smoothly slides
- * between tabs as the active route changes.
- */
 const AnimatedTabBar = ({ state, navigation }: BottomTabBarProps) => {
   const insets = useSafeAreaInsets();
 
@@ -61,11 +53,9 @@ const AnimatedTabBar = ({ state, navigation }: BottomTabBarProps) => {
   const tabWidth = width / tabCount;
   const indicatorWidth = tabWidth * INDICATOR_RATIO;
 
-  // Where the indicator sits (left edge) for a given tab index.
   const offsetFor = (index: number) =>
     index * tabWidth + (tabWidth - indicatorWidth) / 2;
 
-  // Initialise at the active tab so there's no jump on first render.
   const translateX = useRef(new Animated.Value(offsetFor(state.index))).current;
 
   useEffect(() => {
@@ -75,8 +65,6 @@ const AnimatedTabBar = ({ state, navigation }: BottomTabBarProps) => {
       friction: 8,
       tension: 70,
     }).start();
-    // offsetFor depends only on tabWidth/indicatorWidth (derived from width).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.index, tabWidth, indicatorWidth]);
 
   return (
@@ -116,9 +104,7 @@ const AnimatedTabBar = ({ state, navigation }: BottomTabBarProps) => {
             onLongPress={onLongPress}
             activeOpacity={0.7}
           >
-            {TAB_ICONS[route.name]?.(
-              isFocused ? ACTIVE_COLOR : INACTIVE_COLOR,
-            )}
+            {TAB_ICONS[route.name]?.(isFocused ? ACTIVE_COLOR : INACTIVE_COLOR)}
           </TouchableOpacity>
         );
       })}
@@ -130,11 +116,6 @@ const BottomTabs = () => {
   return (
     <Tab.Navigator
       screenOptions={{ headerShown: false }}
-      // react-navigation *calls* tabBar as a function, so the hook-using
-      // component must be rendered as an element (not passed by reference),
-      // otherwise its hooks run outside a render → "Invalid hook call".
-      // AnimatedTabBar is module-scoped, so this arrow is stable in practice.
-      // eslint-disable-next-line react/no-unstable-nested-components
       tabBar={props => <AnimatedTabBar {...props} />}
     >
       <Tab.Screen name="Home" component={Home} />

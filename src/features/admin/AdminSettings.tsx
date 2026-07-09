@@ -27,9 +27,13 @@ const ADMIN_OPTIONS: {
   label: string;
   route?: AdminRoute;
 }[] = [
-    { icon: 'shield-checkmark-outline', label: 'Role and Permissions', route: 'Roles' },
-    { icon: 'people-outline', label: 'Users', route: 'Users' },
-  ];
+  {
+    icon: 'shield-checkmark-outline',
+    label: 'Role and Permissions',
+    route: 'Roles',
+  },
+  { icon: 'people-outline', label: 'Users', route: 'Users' },
+];
 
 const AdminSettings = () => {
   const navigation = useNavigation<Nav>();
@@ -60,7 +64,7 @@ const AdminSettings = () => {
                 <Ionicons
                   name={item.icon}
                   size={width * 0.05}
-                  color={colors.darkGreen}
+                  color={colors.mantineBlue}
                 />
               </View>
               <Text style={styles.rowLabel}>{item.label}</Text>

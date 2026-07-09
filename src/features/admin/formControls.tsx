@@ -52,7 +52,7 @@ export const Checkbox = ({
     <Ionicons
       name={checked ? 'checkbox' : 'square-outline'}
       size={width * 0.06}
-      color={checked ? colors.darkGreen : colors.gray}
+      color={checked ? colors.mantineBlue : colors.gray}
     />
     <Text style={styles.checkboxLabel}>{label}</Text>
   </TouchableOpacity>
@@ -105,7 +105,11 @@ export const Dropdown = ({
         >
           {selected.length > 0 ? selected.join(', ') : placeholder}
         </Text>
-        <Ionicons name="chevron-down" size={width * 0.045} color={colors.gray} />
+        <Ionicons
+          name="chevron-down"
+          size={width * 0.045}
+          color={colors.gray}
+        />
       </TouchableOpacity>
 
       <Modal
@@ -133,7 +137,7 @@ export const Dropdown = ({
                           <Ionicons
                             name="checkmark"
                             size={width * 0.05}
-                            color={colors.darkGreen}
+                            color={colors.mantineBlue}
                           />
                         )}
                       </TouchableOpacity>
@@ -146,7 +150,7 @@ export const Dropdown = ({
                     text="Done"
                     btnHeight={height * 0.055}
                     btnWidth={width * 0.8}
-                    backgroundColor={colors.darkGreen}
+                    backgroundColor={colors.mantineBlue}
                     textColor={colors.white}
                     borderRadius={12}
                     onPress={() => setOpen(false)}

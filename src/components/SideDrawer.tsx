@@ -22,13 +22,8 @@ import { fontSizes } from '../utils/fontSizes';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
-const DRAWER_WIDTH = width * 0.8;
-const MENU_ITEMS = [
-  'Home',
-  'My Orders',
-  'Get Help',
-  'Payment Methods',
-];
+const DRAWER_WIDTH = width * 0.75;
+const MENU_ITEMS = ['Home', 'My Orders', 'Get Help', 'Payment Methods'];
 
 interface SideDrawerProps {
   visible: boolean;
@@ -78,11 +73,6 @@ const SideDrawer = ({ visible, onClose }: SideDrawerProps) => {
     return null;
   }
 
-  const handleLogout = () => {
-    onClose();
-    navigation.navigate('SignInEmail');
-  };
-
   return (
     <Modal transparent visible animationType="none" onRequestClose={onClose}>
       <View style={styles.root}>
@@ -90,9 +80,7 @@ const SideDrawer = ({ visible, onClose }: SideDrawerProps) => {
           <Pressable style={styles.flex} onPress={onClose} />
         </Animated.View>
 
-        <Animated.View
-          style={[styles.panel, { transform: [{ translateX }] }]}
-        >
+        <Animated.View style={[styles.panel, { transform: [{ translateX }] }]}>
           {/* Header */}
           <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
             <TouchableOpacity
@@ -118,53 +106,30 @@ const SideDrawer = ({ visible, onClose }: SideDrawerProps) => {
             </View>
           </View>
 
-          {/* Menu items */}
           <ScrollView
             style={styles.flex}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.menu}
           >
-            {MENU_ITEMS.map(item => (
-              <CustomButton
-                key={item}
-                text={item}
-                onPress={onClose}
-                btnHeight={height * 0.06}
-                btnWidth={DRAWER_WIDTH - width * 0.1}
-                backgroundColor={colors.cardBg}
-                textColor={colors.black}
-                borderRadius={30}
-                justifyContent="flex-start"
-                paddingHorizontal={width * 0.06}
-              />
+            {MENU_ITEMS.map((item, index) => (
+              <View key={item}>
+                <CustomButton
+                  text={item}
+                  onPress={onClose}
+                  btnHeight={height * 0.06}
+                  btnWidth={DRAWER_WIDTH - width * 0.1}
+                  backgroundColor="transparent"
+                  textColor={colors.black}
+                  borderRadius={0}
+                  justifyContent="flex-start"
+                  paddingHorizontal={width * 0.02}
+                />
+                {index !== MENU_ITEMS.length - 1 && (
+                  <View style={styles.divider} />
+                )}
+              </View>
             ))}
           </ScrollView>
-
-
-          <View
-            style={[
-              styles.logoutWrap,
-            ]}
-          >
-            <CustomButton
-              text="Logout"
-              onPress={handleLogout}
-              btnHeight={height * 0.062}
-              btnWidth={DRAWER_WIDTH - width * 0.1}
-              backgroundColor={colors.darkGreen}
-              textColor={colors.white}
-              borderRadius={30}
-              justifyContent="space-between"
-              paddingHorizontal={width * 0.06}
-              rightIcon={
-                <Ionicons
-                  name="exit-outline"
-                  size={width * 0.06}
-                  color={colors.white}
-                />
-              }
-            />
-          </View>
         </Animated.View>
       </View>
     </Modal>
@@ -177,6 +142,19 @@ const styles = StyleSheet.create({
   },
   flex: {
     flex: 1,
+  },
+  menu: {
+    paddingHorizontal: width * 0.05,
+    paddingTop: height * 0.025,
+    gap: height * 0.01,
+  },
+  divider: {
+    height: 0.5,
+    backgroundColor: colors.gray,
+    marginVertical: height * 0.015,
+    alignSelf: 'center',
+    justifyContent: 'center',
+    width: DRAWER_WIDTH - width * 0.1,
   },
   backdrop: {
     position: 'absolute',
@@ -198,10 +176,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   header: {
-    backgroundColor: colors.darkGreen,
+    backgroundColor: colors.mantineBlue,
     paddingHorizontal: width * 0.05,
     paddingBottom: height * 0.03,
-    borderBottomRightRadius: 24,
   },
   close: {
     alignSelf: 'flex-end',
@@ -236,15 +213,6 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.sm,
     fontFamily: fontFamily.UrbanistMedium,
     color: colors.white,
-  },
-  menu: {
-    paddingHorizontal: width * 0.05,
-    paddingTop: height * 0.025,
-    gap: height * 0.015,
-  },
-  logoutWrap: {
-    alignItems: 'center',
-    bottom: height * 0.1,
   },
 });
 
