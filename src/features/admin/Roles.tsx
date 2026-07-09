@@ -8,26 +8,25 @@ import { RootStackParamList } from '../../navigation/types';
 import { height, width } from '../../utils';
 import { colors } from '../../utils/colors';
 import { fontSizes } from '../../utils/fontSizes';
-import { useUsers } from './UsersContext';
+import { useRoles } from './RolesContext';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
-const Users = () => {
+const Roles = () => {
   const navigation = useNavigation<Nav>();
-  const { users } = useUsers();
+  const { roles } = useRoles();
 
   return (
     <View style={styles.container}>
-      <TopHeader text="Add User" isBack />
+      <TopHeader text="Roles & Permissions" isBack />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
       >
-        {/* Transparent add button (centered) */}
         <CustomButton
-          text="Add Users"
-          onPress={() => navigation.navigate('CreateUser')}
+          text="Add Roles"
+          onPress={() => navigation.navigate('CreateRole')}
           btnHeight={height * 0.06}
           btnWidth={width * 0.9}
           backgroundColor="transparent"
@@ -40,28 +39,27 @@ const Users = () => {
           }
         />
 
-        {/* Saved user cards */}
-        {users.length === 0 ? (
-          <Text style={styles.emptyText}>No users added yet.</Text>
+        {roles.length === 0 ? (
+          <Text style={styles.emptyText}>No roles added yet.</Text>
         ) : (
           <View style={styles.list}>
-            {users.map(user => (
+            {roles.map(role => (
               <TouchableOpacity
-                key={user.id}
-                style={styles.userCard}
+                key={role.id}
+                style={styles.roleCard}
                 activeOpacity={0.6}
                 onPress={() =>
-                  navigation.navigate('EditUser', { userId: user.id })
+                  navigation.navigate('EditRole', { roleId: role.id })
                 }
               >
                 <View style={styles.avatar}>
                   <Text style={styles.avatarText}>
-                    {user.name.charAt(0).toUpperCase()}
+                    {role.title.charAt(0).toUpperCase()}
                   </Text>
                 </View>
-                <View style={styles.userInfo}>
-                  <Text style={styles.userName}>{user.name}</Text>
-                  <Text style={styles.userEmail}>{user.email}</Text>
+                <View style={styles.roleInfo}>
+                  <Text style={styles.roleTitle}>{role.title}</Text>
+                  <Text style={styles.roleScope}>{role.scope}</Text>
                 </View>
                 <Ionicons
                   name="chevron-forward"
@@ -98,7 +96,7 @@ const styles = StyleSheet.create({
     marginTop: height * 0.035,
     gap: height * 0.015,
   },
-  userCard: {
+  roleCard: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: width * 0.04,
@@ -123,16 +121,16 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.UrbanistBold,
     fontWeight: '700',
   },
-  userInfo: {
+  roleInfo: {
     flex: 1,
   },
-  userName: {
+  roleTitle: {
     fontSize: fontSizes.sm2,
     fontFamily: fontFamily.UrbanistBold,
     fontWeight: '600',
     color: colors.black,
   },
-  userEmail: {
+  roleScope: {
     marginTop: 2,
     fontSize: fontSizes.sm,
     fontFamily: fontFamily.UrbanistMedium,
@@ -140,4 +138,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Users;
+export default Roles;

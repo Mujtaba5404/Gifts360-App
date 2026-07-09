@@ -5,3 +5,4 @@ export { default as CustomMultiInput } from './CustomMultiInput';
 export { default as CustomSelect } from './CustomSelect';
 export { default as CustomTabs } from './CustomTabs';
 export { default as TopHeader } from './TopHeader';
+export { default as SideDrawer } from './SideDrawer';

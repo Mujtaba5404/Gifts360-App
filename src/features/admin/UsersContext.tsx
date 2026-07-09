@@ -11,12 +11,19 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  password: string;
+  brands: string[];
+  usesBrandAliases: boolean;
+  role: string;
+  isActive: boolean;
 }
+
+type NewUser = Omit<User, 'id'>;
 
 interface UsersContextValue {
   users: User[];
-  addUser: (name: string, email: string) => void;
-  updateUser: (id: string, name: string, email: string) => void;
+  addUser: (user: NewUser) => void;
+  updateUser: (id: string, changes: Partial<NewUser>) => void;
 }
 
 const UsersContext = createContext<UsersContextValue | undefined>(undefined);
@@ -28,16 +35,13 @@ export const UsersProvider = ({ children }: { children: ReactNode }) => {
   const value = useMemo<UsersContextValue>(
     () => ({
       users,
-      addUser: (name, email) => {
+      addUser: user => {
         idRef.current += 1;
-        setUsers(prev => [
-          { id: String(idRef.current), name, email },
-          ...prev,
-        ]);
+        setUsers(prev => [{ id: String(idRef.current), ...user }, ...prev]);
       },
-      updateUser: (id, name, email) => {
+      updateUser: (id, changes) => {
         setUsers(prev =>
-          prev.map(user => (user.id === id ? { ...user, name, email } : user)),
+          prev.map(user => (user.id === id ? { ...user, ...changes } : user)),
         );
       },
     }),

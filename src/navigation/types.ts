@@ -7,5 +7,9 @@ export type RootStackParamList = {
   SignInEmail: undefined;
   Home: undefined;
   Users: undefined;
+  CreateUser: undefined;
   EditUser: { userId: string };
+  Roles: undefined;
+  CreateRole: undefined;
+  EditRole: { roleId: string };
 };

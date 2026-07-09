@@ -20,16 +20,16 @@ type Nav = NativeStackNavigationProp<RootStackParamList>;
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
 // Only params-less destinations are linkable from here.
-type AdminRoute = 'Users';
+type AdminRoute = 'Users' | 'Roles';
 
 const ADMIN_OPTIONS: {
   icon: IconName;
   label: string;
   route?: AdminRoute;
 }[] = [
-  { icon: 'shield-checkmark-outline', label: 'Role and Permissions' },
-  { icon: 'people-outline', label: 'Users', route: 'Users' },
-];
+    { icon: 'shield-checkmark-outline', label: 'Role and Permissions', route: 'Roles' },
+    { icon: 'people-outline', label: 'Users', route: 'Users' },
+  ];
 
 const AdminSettings = () => {
   const navigation = useNavigation<Nav>();
