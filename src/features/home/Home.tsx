@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import {
-    ImageBackground,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View
+  ImageBackground,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 
 import { fontFamily } from '../../assets/Fonts';
@@ -29,18 +29,15 @@ const Home = () => {
 
       <SideDrawer visible={drawerOpen} onClose={() => setDrawerOpen(false)} />
 
-      <ImageBackground source={images.background} style={{ flex: 1 }}>
-        <ScrollView showsVerticalScrollIndicator={false}>
 
-          <Text style={styles.welcome}>
-            Welcome Mujtaba
-          </Text>
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <Text style={styles.welcome}>Welcome Mujtaba</Text>
 
           <PnlCard />
 
           <View style={{ height: height * 0.08 }} />
         </ScrollView>
-      </ImageBackground>
+
     </View>
   );
 };

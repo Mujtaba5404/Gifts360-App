@@ -15,8 +15,7 @@ import { hideLoader, showLoader } from '../redux/slice/screenSlice';
 import { store } from '../redux/store';
 import { setToken } from '../redux/slice/roleSlice';
 
-
-const baseURL = 'https://jrjtz2pc-1234.inc1.devtunnels.ms/api/v1/';
+const baseURL = 'https://gifts360.crmutilitylive.com/api/v1/';
 
 const instance = axios.create({
   baseURL,
@@ -52,7 +51,10 @@ export const normalizeAuthToken = (token: unknown): string => {
     return '';
   }
 
-  const normalizedToken = token.trim().replace(/^Bearer\s+/i, '').trim();
+  const normalizedToken = token
+    .trim()
+    .replace(/^Bearer\s+/i, '')
+    .trim();
 
   if (
     !normalizedToken ||
@@ -75,7 +77,7 @@ const getAuthorizationTokenFromHeaders = (
     typeof headerReader.get === 'function'
       ? headerReader.get('Authorization')
       : (headers as Record<string, unknown>).Authorization ||
-      (headers as Record<string, unknown>).authorization;
+        (headers as Record<string, unknown>).authorization;
 
   return normalizeAuthToken(headerValue);
 };
@@ -91,7 +93,6 @@ const refreshAccessToken = async (): Promise<string | null> => {
     return null;
   }
 
-
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
@@ -100,10 +101,13 @@ const refreshAccessToken = async (): Promise<string | null> => {
     headers['x-app-language'] = languageSelect;
   }
 
-
-  const response = await refreshInstance.post('auth/refresh', {
-    refreshToken,
-  }, { headers });
+  const response = await refreshInstance.post(
+    'auth/refresh',
+    {
+      refreshToken,
+    },
+    { headers },
+  );
 
   const newAccessToken = normalizeAuthToken(response?.data?.data?.accessToken);
   if (newAccessToken) {
@@ -146,9 +150,9 @@ instance.interceptors.response.use(
   error => {
     store.dispatch(hideLoader('idle'));
     const status = error?.response?.status;
-    const originalRequest = error?.config as (AxiosRequestConfig & {
+    const originalRequest = error?.config as AxiosRequestConfig & {
       _retry?: boolean;
-    });
+    };
 
     if (
       (status === 401 || status === 403) &&
@@ -178,14 +182,15 @@ instance.interceptors.response.use(
           if (!accessToken) {
             reject(
               error.response?.data?.message ||
-              'Something went wrong. Please try again.',
+                'Something went wrong. Please try again.',
             );
             return;
           }
 
           if (originalRequest.headers) {
-            (originalRequest.headers as AxiosRequestHeaders).Authorization =
-              `Bearer ${accessToken}`;
+            (
+              originalRequest.headers as AxiosRequestHeaders
+            ).Authorization = `Bearer ${accessToken}`;
           } else {
             originalRequest.headers = {
               Authorization: `Bearer ${accessToken}`,
@@ -199,7 +204,7 @@ instance.interceptors.response.use(
 
     return Promise.reject(
       error.response?.data?.message ||
-      'Something went wrong. Please try again.',
+        'Something went wrong. Please try again.',
     );
   },
 );

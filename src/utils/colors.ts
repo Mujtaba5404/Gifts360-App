@@ -6,5 +6,5 @@ export const colors: { [key: string]: string } = {
   border: '#ECECE6',
   cardBg: '#F7F8F5',
   darkGreen: '#1b342e',
-  mantineBlue: '#1864ab'
+  mantineBlue: '#4263EB'
 };

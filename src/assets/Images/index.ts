@@ -6,6 +6,7 @@ const images: { [key: string]: ImageSourcePropType } = {
   profileIcon: require('../Images/profileIcon.png'),
   backIcon: require('../Images/backIcon.png'),
   drawerIcon: require('../Images/drawerIcon.png'),
+  background: require('../Images/background.png'),
 };
 
 export default images;

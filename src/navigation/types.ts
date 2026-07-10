@@ -13,4 +13,7 @@ export type RootStackParamList = {
   CreateRole: undefined;
   EditRole: { roleId: string };
   ChangePasswordScreen: undefined;
+  CreateExpenses: undefined;
+  EditExpenses: { expense: Expense };
+  ExpensesFlatList: undefined;
 };

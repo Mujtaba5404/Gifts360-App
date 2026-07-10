@@ -4,15 +4,8 @@ import {
 } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@react-native-vector-icons/ionicons';
 import { ReactNode, useEffect, useRef } from 'react';
-import {
-  Animated,
-  Image,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Animated, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import images from '../assets/Images';
 import AdminSettings from '../features/admin/AdminSettings';
 import Profile from '../features/auth/Profile';
 import Home from '../features/home/Home';
@@ -21,27 +14,28 @@ import { colors } from '../utils/colors';
 
 const Tab = createBottomTabNavigator();
 
-const ACTIVE_COLOR = colors.mantineBlue;
-const INACTIVE_COLOR = colors.gray;
+
+const ICON_COLOR = colors.mantineBlue;
 
 const ICON_SIZE = 26;
 
-const TAB_ICONS: Record<string, (color: string) => ReactNode> = {
-  Home: color => (
-    <Image
-      source={images.homeIcon}
-      style={[styles.icon, { tintColor: color }]}
+const TAB_ICONS: Record<string, { outline: string; filled: string }> = {
+  Home: { outline: 'home-outline', filled: 'home' },
+  AdminSettings: { outline: 'settings-outline', filled: 'settings' },
+  Profile: { outline: 'person-outline', filled: 'person' },
+};
+
+const renderTabIcon = (routeName: string, isFocused: boolean): ReactNode => {
+  const icons = TAB_ICONS[routeName];
+  if (!icons) return null;
+
+  return (
+    <Ionicons
+      name={isFocused ? icons.filled : icons.outline}
+      size={ICON_SIZE}
+      color={ICON_COLOR}
     />
-  ),
-  Profile: color => (
-    <Image
-      source={images.profileIcon}
-      style={[styles.icon, { tintColor: color }]}
-    />
-  ),
-  AdminSettings: color => (
-    <Ionicons name="settings" size={ICON_SIZE} color={color} />
-  ),
+  );
 };
 
 const INDICATOR_RATIO = 0.4;
@@ -104,7 +98,7 @@ const AnimatedTabBar = ({ state, navigation }: BottomTabBarProps) => {
             onLongPress={onLongPress}
             activeOpacity={0.7}
           >
-            {TAB_ICONS[route.name]?.(isFocused ? ACTIVE_COLOR : INACTIVE_COLOR)}
+            {renderTabIcon(route.name, isFocused)}
           </TouchableOpacity>
         );
       })}
@@ -142,17 +136,12 @@ const styles = StyleSheet.create({
     top: 0,
     height: 3,
     borderRadius: 2,
-    backgroundColor: ACTIVE_COLOR,
+    backgroundColor: ICON_COLOR,
   },
   tab: {
     height: 55,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  icon: {
-    width: 26,
-    height: 26,
-    resizeMode: 'contain',
   },
 });
 

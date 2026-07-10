@@ -2,6 +2,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useState } from 'react';
 import {
   Image,
+  ImageBackground,
   Keyboard,
   StyleSheet,
   Text,
@@ -48,7 +49,6 @@ const SignInEmail = ({ navigation }: Props) => {
           password,
         },
       });
-      console.log(response);
 
       Toast.show({
         type: 'success',
@@ -68,84 +68,100 @@ const SignInEmail = ({ navigation }: Props) => {
 
   return (
     <TouchableWithoutFeedback onPress={dismissKeyboard}>
-      <View style={{ flex: 1 }}>
-        <View style={styles.container}>
-          <Image source={images.Logogifts360} style={styles.logo} />
-          <Text style={styles.welcomeText}>Welcome back</Text>
-          <View style={styles.inputMain}>
-            <View>
-              <CustomTextInput
-                placeholder="Email Address"
-                placeholderTextColor={colors.black}
-                inputHeight={height * 0.05}
-                inputWidth={width * 0.85}
-                value={email}
-                onChangeText={setEmail}
-                onBlur={() => setEmailTouched(true)}
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-              {showEmailError && (
-                <Text style={styles.errorText}>
-                  Please enter a valid email address.
-                </Text>
-              )}
-            </View>
+      <ImageBackground source={images.background} style={{ flex: 1 }}>
+        <View style={styles.overlayContainer}>
+          <View style={styles.card}>
+            <Image source={images.Logogifts360} style={styles.logo} />
+            <Text style={styles.welcomeText}>Welcome back</Text>
 
-            <View>
-              <CustomTextInput
-                placeholder="Password"
-                placeholderTextColor={colors.black}
-                inputHeight={height * 0.05}
-                inputWidth={width * 0.85}
-                isPassword={true}
-                value={password}
-                onChangeText={setPassword}
-                onBlur={() => setPasswordTouched(true)}
-                keyboardType="default"
-              />
-            </View>
+            <View style={styles.inputMain}>
+              <View>
+                <CustomTextInput
+                  placeholder="Email Address"
+                  placeholderTextColor={colors.black}
+                  inputHeight={height * 0.05}
+                  inputWidth={width * 0.85}
+                  value={email}
+                  onChangeText={setEmail}
+                  onBlur={() => setEmailTouched(true)}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
+                {showEmailError && (
+                  <Text style={styles.errorText}>
+                    Please enter a valid email address.
+                  </Text>
+                )}
+              </View>
 
-            <View style={{ alignItems: 'center', top: height * 0.04 }}>
+              <View>
+                <CustomTextInput
+                  placeholder="Password"
+                  placeholderTextColor={colors.black}
+                  inputHeight={height * 0.05}
+                  inputWidth={width * 0.85}
+                  isPassword={true}
+                  value={password}
+                  onChangeText={setPassword}
+                  onBlur={() => setPasswordTouched(true)}
+                  keyboardType="default"
+                />
+              </View>
+            </View>
+            <View style={{ alignItems: 'center', }}>
               <CustomButton
                 btnHeight={height * 0.05}
                 btnWidth={width * 0.85}
                 text={isPending ? 'Signing in...' : 'Login'}
                 backgroundColor={colors.mantineBlue}
                 textColor={colors.white}
-                // onPress={handleLogin}
-                onPress={() => navigation.navigate('Home')}
+                onPress={handleLogin}
                 disabled={isPending}
               />
             </View>
           </View>
         </View>
-      </View>
+      </ImageBackground>
     </TouchableWithoutFeedback>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  overlayContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
+  },
+  card: {
+    width: width * 0.9,
+    height: height * 0.49,
+    bottom: height * 0.02,
+    backgroundColor: 'rgba(255, 255, 255, 0.75)',
+    borderRadius: 25,
+    paddingVertical: height * 0.03,
+    paddingHorizontal: width * 0.05,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   logo: {
     width: width * 0.55,
     height: height * 0.2,
     resizeMode: 'contain',
-    top: height * 0.05,
+    bottom: height * 0.04,
   },
   welcomeText: {
     fontFamily: fontFamily.UrbanistBold,
     fontSize: fontSizes.lg,
     fontWeight: '700',
     color: colors.black,
-    top: height * 0.08,
+    bottom: height * 0.05,
   },
   inputMain: {
-    marginTop: height * 0.12,
     gap: height * 0.01,
-    borderRadius: 25,
+    width: '100%',
+    alignItems: 'center',
+    bottom: height * 0.03,
   },
   errorText: {
     color: 'red',

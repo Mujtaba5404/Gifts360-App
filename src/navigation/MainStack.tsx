@@ -11,6 +11,9 @@ import Users from '../features/admin/Users';
 import { UsersProvider } from '../features/admin/UsersContext';
 import BottomTabs from './BottomTabs';
 import { RootStackParamList } from './types';
+import ExpensesFlatList from '../features/expenses/ExpensesFlatList';
+import CreateExpenses from '../features/expenses/CreateExpenses';
+import EditExpenses from '../features/expenses/EditExpenses';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -27,6 +30,9 @@ const MainStack: React.FC = () => {
           <Stack.Screen name="Roles" component={Roles} />
           <Stack.Screen name="CreateRole" component={CreateRole} />
           <Stack.Screen name="EditRole" component={EditRole} />
+          <Stack.Screen name='CreateExpenses' component={CreateExpenses}/>
+          <Stack.Screen name='EditExpenses' component={EditExpenses}/>
+          <Stack.Screen name='ExpensesFlatList' component={ExpensesFlatList}/>
           {/* <Stack.Screen name="ChangePasswordScreen" component={ChangePasswordScreen} /> */}
         </Stack.Navigator>
       </RolesProvider>

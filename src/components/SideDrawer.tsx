@@ -14,7 +14,6 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { fontFamily } from '../assets/Fonts';
-import CustomButton from './CustomButton';
 import { RootStackParamList } from '../navigation/types';
 import { height, width } from '../utils';
 import { colors } from '../utils/colors';
@@ -22,8 +21,21 @@ import { fontSizes } from '../utils/fontSizes';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
+type MenuItem = {
+  label: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  route?: string;
+};
+
 const DRAWER_WIDTH = width * 0.75;
-const MENU_ITEMS = ['Home', 'My Orders', 'Get Help', 'Payment Methods'];
+
+const MENU_ITEMS: MenuItem[] = [
+  { label: 'Home', icon: 'home-outline'},
+  { label: 'Customers', icon: 'people-outline', route: 'Customers' },
+  { label: 'Vendors', icon: 'cube-outline', route: 'Vendors' },
+  { label: 'Expenses', icon: 'card-outline', route: 'ExpensesFlatList' },
+  { label: 'Petty Cash', icon: 'cash-outline', route: 'PettyCash' },
+];
 
 interface SideDrawerProps {
   visible: boolean;
@@ -81,7 +93,7 @@ const SideDrawer = ({ visible, onClose }: SideDrawerProps) => {
         </Animated.View>
 
         <Animated.View style={[styles.panel, { transform: [{ translateX }] }]}>
-          {/* Header */}
+          
           <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
             <TouchableOpacity
               style={styles.close}
@@ -112,18 +124,25 @@ const SideDrawer = ({ visible, onClose }: SideDrawerProps) => {
             contentContainerStyle={styles.menu}
           >
             {MENU_ITEMS.map((item, index) => (
-              <View key={item}>
-                <CustomButton
-                  text={item}
-                  onPress={onClose}
-                  btnHeight={height * 0.06}
-                  btnWidth={DRAWER_WIDTH - width * 0.1}
-                  backgroundColor="transparent"
-                  textColor={colors.black}
-                  borderRadius={0}
-                  justifyContent="flex-start"
-                  paddingHorizontal={width * 0.02}
-                />
+              <View key={item.label}>
+                <TouchableOpacity
+                  style={styles.menuRow}
+                  onPress={() => {
+                    onClose();
+                    if (item.route) {
+                      navigation.navigate(item.route as never);
+                    }
+                  }}
+                  activeOpacity={0.6}
+                >
+                  <Ionicons
+                    name={item.icon}
+                    size={width * 0.05}
+                    color={colors.mantineBlue}
+                    style={styles.menuIcon}
+                  />
+                  <Text style={styles.menuText}>{item.label}</Text>
+                </TouchableOpacity>
                 {index !== MENU_ITEMS.length - 1 && (
                   <View style={styles.divider} />
                 )}
@@ -145,8 +164,21 @@ const styles = StyleSheet.create({
   },
   menu: {
     paddingHorizontal: width * 0.05,
-    paddingTop: height * 0.025,
-    gap: height * 0.01,
+    paddingTop: height * 0.03,
+  },
+  menuRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: height * 0.04,
+    paddingHorizontal: width * 0.02,
+  },
+  menuIcon: {
+    marginRight: width * 0.04,
+  },
+  menuText: {
+    fontSize: fontSizes.sm,
+    fontFamily: fontFamily.UrbanistMedium,
+    color: colors.black,
   },
   divider: {
     height: 0.5,

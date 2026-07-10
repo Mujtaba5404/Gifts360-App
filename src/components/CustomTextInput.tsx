@@ -74,6 +74,7 @@ const CustomTextInput: React.FC<CustomTextInputProps> = ({
     >
       {leftIcon && <View style={styles.leftIcon}>{leftIcon}</View>}
       <TextInput
+      
         placeholder={placeholder}
         placeholderTextColor={
           placeholderTextColor ||
