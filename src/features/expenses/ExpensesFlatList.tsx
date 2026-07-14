@@ -17,18 +17,31 @@ import { height, width } from '../../utils';
 import { colors } from '../../utils/colors';
 import { fontSizes } from '../../utils/fontSizes';
 import { getPaymentModeLabel } from './paymentModes';
+import formatAmount from '../../utils/formatAmount';
+import formatDate from '../../utils/formatDate';
+import capitalizeLetters from '../../utils/capitalizeLetters';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
-const formatDate = (iso: string) => {
-  const parsed = new Date(iso);
-  return isNaN(parsed.getTime())
-    ? '-'
-    : parsed.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    });
+const toTitleCase = (str: string) =>
+  str
+    ?.trim()
+    .split(/\s+/)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ') ?? '';
+
+// Payment mode ke hisaab se apna color — cash green, cheque amber, baqi neutral
+const PAYMENT_MODE_COLORS: Record<string, string> = {
+  cash: '#10B981',
+  cheque: '#F59E0B',
+  bank: '#3B82F6',
+  card: '#8B5CF6',
+  online: '#EC4899',
+};
+
+const getPaymentModeColor = (mode?: string) => {
+  if (!mode) return colors.gray;
+  return PAYMENT_MODE_COLORS[mode.toLowerCase()] ?? colors.mantineBlue;
 };
 
 const ExpensesFlatList = () => {
@@ -38,46 +51,70 @@ const ExpensesFlatList = () => {
     useExpenses({
       page: 1,
       pageSize: 100,
+      sort: '-date',
     });
-  console.log('ExpensesFlatList: data', data);
 
   const expenses = data?.data ?? [];
-  console.log('ExpensesFlatList: expenses', expenses);
 
   const renderItem = ({ item }: { item: Expense }) => {
-    // Cash expenses ka koi reference nahi hota, is liye sirf tab jodo jab mile.
-    const meta = [
-      formatDate(item.date),
-      getPaymentModeLabel(item.paymentMode),
-      item.paymentReference,
-    ]
-      .filter(Boolean)
-      .join(' · ');
+    const payeeName = toTitleCase(item.payee);
+    const paymentModeLabel = getPaymentModeLabel(item.paymentMode);
+    const modeColor = getPaymentModeColor(item.paymentMode);
 
     return (
       <TouchableOpacity
         style={styles.card}
-        activeOpacity={0.6}
+        activeOpacity={0.7}
         onPress={() => navigation.navigate('EditExpenses', { expense: item })}
       >
-        <View style={styles.info}>
+        <View style={styles.row}>
           <Text style={styles.payee} numberOfLines={1}>
-            {item.payee}
+            {capitalizeLetters(payeeName)}
           </Text>
-          <Text
-            style={styles.description}
-            numberOfLines={1}
-            ellipsizeMode="tail"
-          >
-            {item.description}
-          </Text>
-          <Text style={styles.meta} numberOfLines={1}>
-            {meta}
+          <Text style={styles.amount} numberOfLines={1}>
+            {formatAmount(item.amount)}
           </Text>
         </View>
 
-        <View style={styles.right}>
-          <Text style={styles.amount}>Rs {item.amount.toLocaleString()}</Text>
+        <View style={styles.row}>
+          <View style={styles.tagRow}>
+            {item.type?.title ? (
+              <View style={styles.typePill}>
+                <Text style={styles.typePillText} numberOfLines={1}>
+                  {capitalizeLetters(item.type.title)}
+                </Text>
+              </View>
+            ) : null}
+
+            {item.category?.title ? (
+              <View style={styles.categoryPill}>
+                <Text style={styles.categoryPillText} numberOfLines={1}>
+                  {capitalizeLetters(item.category.title)}
+                </Text>
+              </View>
+            ) : null}
+          </View>
+
+          <View style={styles.modeCol}>
+            {paymentModeLabel ? (
+              <View
+                style={[styles.modePill, { backgroundColor: modeColor + '1A' }]}
+              >
+                <Text
+                  style={[styles.modePillText, { color: modeColor }]}
+                  numberOfLines={1}
+                >
+                  {capitalizeLetters(paymentModeLabel)}
+                </Text>
+              </View>
+            ) : null}
+
+            {item.paymentReference ? (
+              <Text style={styles.rightRef} numberOfLines={1}>
+                #{item.paymentReference}
+              </Text>
+            ) : null}
+          </View>
         </View>
       </TouchableOpacity>
     );
@@ -189,46 +226,91 @@ const styles = StyleSheet.create({
     gap: height * 0.015,
   },
   card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: width * 0.04,
-    paddingVertical: height * 0.018,
+    paddingVertical: height * 0.016,
     paddingHorizontal: width * 0.04,
     backgroundColor: colors.cardBg,
     borderRadius: 16,
     borderWidth: 1,
     borderColor: colors.border,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
+    gap: 8,
   },
-  info: {
-    flex: 1,
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: width * 0.03,
   },
   payee: {
-    fontSize: fontSizes.sm2,
+    flexShrink: 1,
+    fontSize: fontSizes.sm,
     fontFamily: fontFamily.UrbanistBold,
     fontWeight: '600',
     color: colors.black,
   },
-  description: {
-    marginTop: 2,
-    fontSize: fontSizes.sm,
-    fontFamily: fontFamily.UrbanistMedium,
-    color: colors.gray,
-  },
-  meta: {
-    marginTop: 4,
-    fontSize: fontSizes.sm,
-    fontFamily: fontFamily.UrbanistMedium,
-    color: colors.gray,
-  },
-  right: {
-    alignItems: 'flex-end',
-    gap: 4,
-  },
   amount: {
-    fontSize: fontSizes.sm2,
+    fontSize: fontSizes.sm,
     fontFamily: fontFamily.UrbanistBold,
     fontWeight: '700',
-    color: colors.black,
+    color: colors.mantineBlue,
+  },
+  tagRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    flexShrink: 1,
+  },
+  typePill: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 20,
+    backgroundColor: colors.mantineBlue + '1A',
+  },
+  typePillText: {
+    fontSize: fontSizes.xs ?? 12,
+    fontFamily: fontFamily.UrbanistBold,
+    fontWeight: '600',
+    color: colors.mantineBlue,
+  },
+  categoryPill: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 20,
+    backgroundColor: colors.mantineBlue + '1A',
+  },
+  categoryPillText: {
+    fontSize: fontSizes.xs ?? 12,
+    fontFamily: fontFamily.UrbanistBold,
+    fontWeight: '600',
+    color: colors.mantineBlue,
+  },
+  rightDate: {
+    fontSize: fontSizes.xs,
+    fontFamily: fontFamily.UrbanistMedium,
+    color: colors.gray,
+  },
+  modePill: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 20,
+  },
+  modePillText: {
+    fontSize: fontSizes.xs ?? 12,
+    fontFamily: fontFamily.UrbanistBold,
+    fontWeight: '600',
+  },
+   modeCol: {
+    alignItems: 'flex-end',
+    gap: 3,
+  },
+  rightRef: {
+    fontSize: fontSizes.xs ?? 12,
+    fontFamily: fontFamily.UrbanistMedium,
+    color: colors.gray,
   },
 });
 

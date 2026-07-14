@@ -110,15 +110,15 @@ interface UpdateExpenseMutationPayload {
 
 export const useUpdateExpense = () => {
   const mutation = useApiMutation<UpdateExpenseResponse, UpdateExpenseRequestBody>({
-    method: 'PUT',
+    method: 'PATCH',
     endPoint: '/expenses',
   });
 
-  const updateExpense = useCallback(
-    ({ id, body }: UpdateExpenseMutationPayload) =>
-      mutation.mutateAsync({ endPoint: `/expenses/${id}`, body }),
-    [mutation],
-  );
+ const updateExpense = useCallback(
+  ({ id, body }: UpdateExpenseMutationPayload) =>
+    mutation.mutateAsync({ endPoint: `expenses/${id}`, body }),
+  [mutation],
+);
 
   return { ...mutation, updateExpense };
 };

@@ -1,38 +1,78 @@
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@react-native-vector-icons/ionicons';
-import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useMemo, useState } from 'react';
+import { useSelector } from 'react-redux';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import {
+  ActivityIndicator,
   Modal,
   Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
+import Toast from 'react-native-toast-message';
 import { fontFamily } from '../../assets/Fonts';
 import { CustomButton, TopHeader } from '../../components';
 import { RootStackParamList } from '../../navigation/types';
+import { RootState, store } from '../../redux/store'; // <-- adjust path if your store/RootState type lives elsewhere
 import { height, width } from '../../utils';
 import { colors } from '../../utils/colors';
 import { fontSizes } from '../../utils/fontSizes';
-import { ACCOUNTS, formatDisplayDate } from './types';
+import { formatDisplayDate } from './types';
+import { useCreatePettyCash, usePettyCash } from '../../api/usePettyCash';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
+interface DropdownOption {
+  label: string;
+  value: string;
+}
+
 const CreatePettyCash = () => {
   const navigation = useNavigation<Nav>();
+  const queryClient = useQueryClient();
+  const { createPettyCash, isPending } = useCreatePettyCash();
+
+  // roleSlice se logged-in user nikal rahe hain (jo signIn ke waqt setUser se store hua tha)
+  const user = useSelector((state: RootState) => state.role.user); // <-- adjust 'role' key if your rootReducer names it differently
+  console.log("Redux User:", user);
+  const { data: pettyCashData, isLoading: isLoadingAccounts } = usePettyCash({
+    page: 1,
+    pageSize: 100,
+  });
+
+  const accountOptions: DropdownOption[] = useMemo(() => {
+    const rows = pettyCashData?.data ?? [];
+    const seen = new Map<string, DropdownOption>();
+
+    rows.forEach(row => {
+      if (row.account?._id && !seen.has(row.account._id)) {
+        seen.set(row.account._id, {
+          label: row.account.title,
+          value: row.account._id,
+        });
+      }
+    });
+
+    return Array.from(seen.values());
+  }, [pettyCashData]);
 
   const [date, setDate] = useState<Date>(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [account, setAccount] = useState('Cash');
+  const [accountId, setAccountId] = useState('');
   const [showAccountDropdown, setShowAccountDropdown] = useState(false);
   const [amount, setAmount] = useState('');
+
+  const selectedAccountLabel =
+    accountOptions.find(option => option.value === accountId)?.label ?? '';
 
   const onDateChange = (event: any, selectedDate?: Date) => {
     setShowDatePicker(Platform.OS === 'ios');
@@ -42,22 +82,61 @@ const CreatePettyCash = () => {
   };
 
   const onSelectAccount = (selected: string) => {
-    setAccount(selected);
+    setAccountId(selected);
     setShowAccountDropdown(false);
   };
 
-  const onSave = () => {
-    const newEntry = {
-      id: Date.now().toString(),
-      date: date.toISOString(),
-      name,
-      description,
-      account,
-      amount: Number(amount) || 0,
-    };
-    console.log('New petty cash:', newEntry);
+  const onSave = async () => {
+    const parsedAmount = Number(amount);
 
-    navigation.goBack();
+    if (!description.trim()) {
+      Toast.show({ type: 'error', text1: 'Please add a description' });
+      return;
+    }
+    if (!accountId) {
+      Toast.show({ type: 'error', text1: 'Please select an account' });
+      return;
+    }
+    if (!amount.trim() || isNaN(parsedAmount) || parsedAmount === 0) {
+      Toast.show({ type: 'error', text1: 'Please enter a valid amount' });
+      return;
+    }
+    if (!user?._id) {
+  Toast.show({
+    type: 'error',
+    text1: 'Session expired, please login again',
+  });
+  return;
+}
+
+    try {
+      const res = await createPettyCash({
+        body: {
+          date: date.toISOString(),
+          description: description.trim(),
+          account: accountId,
+          amount: parsedAmount,
+          user: user._id, // <-- required by backend
+        },
+      });
+
+      // List ko dobara fetch karwao taake nayi entry turant dikhe.
+      await queryClient.invalidateQueries({ queryKey: ['petty-cash'] });
+
+      Toast.show({
+        type: 'success',
+        text1: 'Success',
+        text2: res?.message || 'Petty cash entry created successfully',
+      });
+
+      navigation.goBack();
+    } catch (err: any) {
+      Toast.show({
+        type: 'error',
+        text1: 'Could not save petty cash',
+        text2: err?.message || 'Something went wrong. Please try again.',
+      });
+    }
   };
 
   return (
@@ -98,18 +177,6 @@ const CreatePettyCash = () => {
           )}
         </View>
 
-        {/* Name */}
-        <View style={styles.field}>
-          <Text style={styles.label}>Name</Text>
-          <TextInput
-            style={[styles.input, styles.inputBox]}
-            placeholder="e.g. Ali Traders"
-            placeholderTextColor={colors.gray}
-            value={name}
-            onChangeText={setName}
-          />
-        </View>
-
         {/* Description */}
         <View style={styles.field}>
           <Text style={styles.label}>Description</Text>
@@ -124,7 +191,7 @@ const CreatePettyCash = () => {
           />
         </View>
 
-        {/* Account - dropdown */}
+        {/* Account - dropdown, real picklist _id use karta hai */}
         <View style={styles.field}>
           <Text style={styles.label}>Account</Text>
           <TouchableOpacity
@@ -132,12 +199,24 @@ const CreatePettyCash = () => {
             activeOpacity={0.7}
             onPress={() => setShowAccountDropdown(true)}
           >
-            <Text style={[styles.input, styles.flex1]}>{account}</Text>
-            <Ionicons
-              name="chevron-down"
-              size={width * 0.05}
-              color={colors.gray}
-            />
+            <Text
+              style={[
+                styles.input,
+                styles.flex1,
+                !selectedAccountLabel && styles.placeholderText,
+              ]}
+            >
+              {selectedAccountLabel || 'Select account'}
+            </Text>
+            {isLoadingAccounts ? (
+              <ActivityIndicator size="small" color={colors.gray} />
+            ) : (
+              <Ionicons
+                name="chevron-down"
+                size={width * 0.05}
+                color={colors.gray}
+              />
+            )}
           </TouchableOpacity>
         </View>
 
@@ -158,8 +237,9 @@ const CreatePettyCash = () => {
         </View>
 
         <CustomButton
-          text="Save Petty Cash"
+          text={isPending ? 'Saving...' : 'Save Petty Cash'}
           onPress={onSave}
+          disabled={isPending}
           btnHeight={height * 0.065}
           btnWidth={width * 0.9}
           backgroundColor={colors.mantineBlue}
@@ -179,31 +259,42 @@ const CreatePettyCash = () => {
           activeOpacity={1}
           onPress={() => setShowAccountDropdown(false)}
         >
-          <View style={styles.dropdownBox}>
-            {ACCOUNTS.map(option => (
-              <TouchableOpacity
-                key={option}
-                style={styles.dropdownOption}
-                onPress={() => onSelectAccount(option)}
-              >
-                <Text
-                  style={[
-                    styles.dropdownOptionText,
-                    option === account && styles.dropdownOptionTextSelected,
-                  ]}
+          <ScrollView
+            style={styles.dropdownBox}
+            contentContainerStyle={styles.dropdownContent}
+            keyboardShouldPersistTaps="handled"
+          >
+            {accountOptions.length === 0 ? (
+              <Text style={styles.dropdownEmptyText}>
+                No accounts available.
+              </Text>
+            ) : (
+              accountOptions.map(option => (
+                <TouchableOpacity
+                  key={option.value}
+                  style={styles.dropdownOption}
+                  onPress={() => onSelectAccount(option.value)}
                 >
-                  {option}
-                </Text>
-                {option === account && (
-                  <Ionicons
-                    name="checkmark"
-                    size={width * 0.05}
-                    color={colors.mantineBlue}
-                  />
-                )}
-              </TouchableOpacity>
-            ))}
-          </View>
+                  <Text
+                    style={[
+                      styles.dropdownOptionText,
+                      option.value === accountId &&
+                        styles.dropdownOptionTextSelected,
+                    ]}
+                  >
+                    {option.label}
+                  </Text>
+                  {option.value === accountId && (
+                    <Ionicons
+                      name="checkmark"
+                      size={width * 0.05}
+                      color={colors.mantineBlue}
+                    />
+                  )}
+                </TouchableOpacity>
+              ))
+            )}
+          </ScrollView>
         </TouchableOpacity>
       </Modal>
     </View>
@@ -235,6 +326,9 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.UrbanistMedium,
     color: colors.black,
     padding: 0,
+  },
+  placeholderText: {
+    color: colors.gray,
   },
   inputBox: {
     borderWidth: 1,
@@ -276,11 +370,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: width * 0.08,
   },
   dropdownBox: {
+    flexGrow: 0,
     backgroundColor: colors.white,
     borderRadius: 12,
-    paddingVertical: height * 0.01,
     borderWidth: 1,
     borderColor: colors.border,
+    maxHeight: height * 0.5,
+  },
+  dropdownContent: {
+    paddingVertical: height * 0.01,
   },
   dropdownOption: {
     flexDirection: 'row',
@@ -298,6 +396,14 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.UrbanistBold,
     fontWeight: '600',
     color: colors.mantineBlue,
+  },
+  dropdownEmptyText: {
+    paddingHorizontal: width * 0.05,
+    paddingVertical: height * 0.018,
+    textAlign: 'center',
+    fontSize: fontSizes.sm,
+    fontFamily: fontFamily.UrbanistMedium,
+    color: colors.gray,
   },
 });
 

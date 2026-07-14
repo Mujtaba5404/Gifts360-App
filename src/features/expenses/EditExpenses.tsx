@@ -425,8 +425,8 @@ const EditExpenses = () => {
           btnHeight={height * 0.065}
           btnWidth={width * 0.9}
           backgroundColor="transparent"
-          textColor={colors.mantineBlue}
-          borderColor={colors.mantineBlue}
+          textColor={colors.red}
+          borderColor={colors.red}
           borderWidth={1}
           borderRadius={8}
         />

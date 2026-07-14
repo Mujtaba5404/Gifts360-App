@@ -102,7 +102,7 @@ const CreateExpenses = () => {
   };
 
   const onSelectType = (selectedTypeId: string) => {
-    setTypeId(selectedTypeId);
+    setTypeId(selectedTypeId); 
     setOpenDropdown(null);
     // Purani category naye type ke under nahi hogi, is liye reset.
     setCategoryId('');
