@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useApiMutation } from '../services';
+import { normalizeAuthToken, useApiMutation } from '../services';
 
 export interface SignInRequestBody {
   email?: string;
@@ -14,20 +14,51 @@ export interface SignInUser {
 }
 
 export interface SignInResponseData {
-  user: SignInUser;
-  accessToken: string;
-  refreshToken: string;
+  user?: SignInUser;
+  accessToken?: string;
+  refreshToken?: string;
+  token?: string;
+  tokens?: { accessToken?: string; refreshToken?: string };
 }
 
 export interface SignInResponse {
   success: boolean;
   message: string;
-  data: SignInResponseData;
+  data?: SignInResponseData;
+  accessToken?: string;
+  refreshToken?: string;
+  token?: string;
+  user?: SignInUser;
 }
 
 interface SignInMutationPayload {
   body: SignInRequestBody;
 }
+
+/**
+ * Backend login response ka shape har jagah ek jaisa nahi hai (kabhi tokens
+ * `data` ke andar aate hain, kabhi top level par, kabhi `tokens` ke andar).
+ * Is liye pehla non-empty token jo mile wahi utha lete hain.
+ */
+export const extractAuthTokens = (response?: SignInResponse) => {
+  const data = response?.data;
+
+  const accessToken = normalizeAuthToken(
+    data?.accessToken ||
+      data?.tokens?.accessToken ||
+      data?.token ||
+      response?.accessToken ||
+      response?.token,
+  );
+
+  const refreshToken = normalizeAuthToken(
+    data?.refreshToken || data?.tokens?.refreshToken || response?.refreshToken,
+  );
+
+  const user = data?.user ?? response?.user;
+
+  return { accessToken, refreshToken, user };
+};
 
 
 export const useSignIn = () => {

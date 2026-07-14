@@ -10,11 +10,19 @@ import {
   View,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
+import { useDispatch } from 'react-redux';
 import { fontFamily } from '../../assets/Fonts';
 import images from '../../assets/Images';
 import { CustomButton, CustomTextInput } from '../../components';
-import { useSignIn } from '../../api/useSignIn';
+import { extractAuthTokens, useSignIn } from '../../api/useSignIn';
 import { RootStackParamList } from '../../navigation/types';
+import {
+  setLogin,
+  setRefreshToken,
+  setToken,
+  setUser,
+  setUserEmail,
+} from '../../redux/slice/roleSlice';
 import { height, width } from '../../utils';
 import { colors } from '../../utils/colors';
 import { fontSizes } from '../../utils/fontSizes';
@@ -22,6 +30,8 @@ import { fontSizes } from '../../utils/fontSizes';
 type Props = NativeStackScreenProps<RootStackParamList, 'SignInEmail'>;
 
 const SignInEmail = ({ navigation }: Props) => {
+  const dispatch = useDispatch();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -49,6 +59,23 @@ const SignInEmail = ({ navigation }: Props) => {
           password,
         },
       });
+
+      const { accessToken, refreshToken, user } = extractAuthTokens(response);
+
+      if (!accessToken) {
+        if (__DEV__) {
+          console.log('SignInEmail: unexpected response shape', response);
+        }
+        throw new Error('Sign in succeeded but no access token was returned.');
+      }
+
+      // Token store kiye bagair har agli API call "no token provided" se fail hoti hai,
+      // kyunke axios interceptor Authorization header isi state se banata hai.
+      dispatch(setToken(accessToken));
+      dispatch(setRefreshToken(refreshToken || null));
+      dispatch(setUser(user ?? {}));
+      dispatch(setUserEmail(user?.email ?? email));
+      dispatch(setLogin());
 
       Toast.show({
         type: 'success',

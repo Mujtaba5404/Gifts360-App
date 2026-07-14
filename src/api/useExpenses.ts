@@ -6,7 +6,10 @@ export interface Picklist {
   title: string;
   value: string;
   color?: string;
-  parentPicklist?: string;
+  scope?: string;
+  resource?: string;
+  field?: string;
+  parentPicklist?: string | null;
   meta?: { isFixedCost?: boolean };
 }
 
@@ -87,4 +90,62 @@ export const useCreateExpense = () => {
   );
 
   return { ...mutation, createExpense };
+};
+
+// ---------- PUT /expenses/:id (update) ----------
+
+
+export type UpdateExpenseRequestBody = Partial<CreateExpenseRequestBody>;
+
+export interface UpdateExpenseResponse {
+  success: boolean;
+  message: string;
+  data: Expense;
+}
+
+interface UpdateExpenseMutationPayload {
+  id: string;
+  body: UpdateExpenseRequestBody;
+}
+
+export const useUpdateExpense = () => {
+  const mutation = useApiMutation<UpdateExpenseResponse, UpdateExpenseRequestBody>({
+    method: 'PUT',
+    endPoint: '/expenses',
+  });
+
+  const updateExpense = useCallback(
+    ({ id, body }: UpdateExpenseMutationPayload) =>
+      mutation.mutateAsync({ endPoint: `/expenses/${id}`, body }),
+    [mutation],
+  );
+
+  return { ...mutation, updateExpense };
+};
+
+// ---------- DELETE /expenses/:id (delete) ----------
+
+export interface DeleteExpenseResponse {
+  success: boolean;
+  message: string;
+}
+
+interface DeleteExpenseMutationPayload {
+  id: string;
+}
+
+export const useDeleteExpense = () => {
+  const mutation = useApiMutation<DeleteExpenseResponse>({
+    method: 'DELETE',
+    endPoint: '/expenses',
+  });
+
+  const deleteExpense = useCallback(
+    ({ id }: DeleteExpenseMutationPayload) =>
+      // Base endPoint yahan expense ke _id ke saath override hota hai.
+      mutation.mutateAsync({ endPoint: `/expenses/${id}` }),
+    [mutation],
+  );
+
+  return { ...mutation, deleteExpense };
 };

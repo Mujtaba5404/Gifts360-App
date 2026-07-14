@@ -14,6 +14,15 @@ import { RootStackParamList } from './types';
 import ExpensesFlatList from '../features/expenses/ExpensesFlatList';
 import CreateExpenses from '../features/expenses/CreateExpenses';
 import EditExpenses from '../features/expenses/EditExpenses';
+import PettyCashFlatList from '../features/pettyCash/PettyCashFlatList';
+import CreatePettyCash from '../features/pettyCash/CreatePettyCash';
+import EditPettyCash from '../features/pettyCash/EditPettyCash';
+import CustomersFlatList from '../features/customers/CustomersFlatList';
+import CreateCustomer from '../features/customers/CreateCustomer';
+import EditCustomer from '../features/customers/EditCustomer';
+import VendorsFlatList from '../features/vendors/VendorsFlatList';
+import CreateVendor from '../features/vendors/CreateVendor';
+import EditVendor from '../features/vendors/EditVendor';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -33,6 +42,15 @@ const MainStack: React.FC = () => {
           <Stack.Screen name='CreateExpenses' component={CreateExpenses}/>
           <Stack.Screen name='EditExpenses' component={EditExpenses}/>
           <Stack.Screen name='ExpensesFlatList' component={ExpensesFlatList}/>
+          <Stack.Screen name='CreatePettyCash' component={CreatePettyCash}/>
+          <Stack.Screen name='EditPettyCash' component={EditPettyCash}/>
+          <Stack.Screen name='PettyCash' component={PettyCashFlatList}/>
+          <Stack.Screen name='Customers' component={CustomersFlatList}/>
+          <Stack.Screen name='CreateCustomer' component={CreateCustomer}/>
+          <Stack.Screen name='EditCustomer' component={EditCustomer}/>
+          <Stack.Screen name='Vendors' component={VendorsFlatList}/>
+          <Stack.Screen name='CreateVendor' component={CreateVendor}/>
+          <Stack.Screen name='EditVendor' component={EditVendor}/>
           {/* <Stack.Screen name="ChangePasswordScreen" component={ChangePasswordScreen} /> */}
         </Stack.Navigator>
       </RolesProvider>

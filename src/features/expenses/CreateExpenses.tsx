@@ -1,28 +1,45 @@
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@react-native-vector-icons/ionicons';
-import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useMemo, useState } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import {
+  ActivityIndicator,
   Modal,
   Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
+import Toast from 'react-native-toast-message';
+import { useCreateExpense, useExpenses } from '../../api/useExpenses';
 import { fontFamily } from '../../assets/Fonts';
 import { CustomButton, TopHeader } from '../../components';
 import { RootStackParamList } from '../../navigation/types';
 import { height, width } from '../../utils';
 import { colors } from '../../utils/colors';
 import { fontSizes } from '../../utils/fontSizes';
+import {
+  CASH_PAYMENT_MODE,
+  getPaymentModeLabel,
+  PAYMENT_MODES,
+} from './paymentModes';
+import { getCategoryOptions, getTypeOptions } from './picklistOptions';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
-const PAYMENT_MODES = ['Cash', 'Card', 'Bank Transfer'];
+/** Ek waqt mein sirf ek dropdown khula rehta hai. */
+type OpenDropdown = 'paymentMode' | 'type' | 'category' | null;
+
+interface DropdownOption {
+  label: string;
+  value: string;
+}
 
 const formatDisplayDate = (d: Date) =>
   d.toLocaleDateString('en-GB', {
@@ -33,17 +50,41 @@ const formatDisplayDate = (d: Date) =>
 
 const CreateExpenses = () => {
   const navigation = useNavigation<Nav>();
+  const queryClient = useQueryClient();
+  const { createExpense, isPending } = useCreateExpense();
+
+  // Expense/Category ke options mojooda expenses se aate hain (koi picklist API nahi hai).
+  const { data: expensesData, isLoading: isLoadingOptions } = useExpenses({
+    page: 1,
+    pageSize: 100,
+  });
 
   const [date, setDate] = useState<Date>(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [payee, setPayee] = useState('');
-  const [paymentMode, setPaymentMode] = useState('Cash');
-  const [showPaymentModeDropdown, setShowPaymentModeDropdown] = useState(false);
+  const [paymentMode, setPaymentMode] = useState(CASH_PAYMENT_MODE);
   const [paymentReference, setPaymentReference] = useState('');
   const [description, setDescription] = useState('');
-  const [expense, setExpense] = useState('');
-  const [category, setCategory] = useState('');
+  const [typeId, setTypeId] = useState('');
+  const [categoryId, setCategoryId] = useState('');
   const [amount, setAmount] = useState('');
+  const [openDropdown, setOpenDropdown] = useState<OpenDropdown>(null);
+
+  const expenses = useMemo(() => expensesData?.data ?? [], [expensesData]);
+
+  const typeOptions: DropdownOption[] = useMemo(
+    () => getTypeOptions(expenses),
+    [expenses],
+  );
+
+  // Categories apne parent type ke neeche aati hain, is liye chuni hui type par filter.
+  const categoryOptions: DropdownOption[] = useMemo(
+    () => getCategoryOptions(expenses, typeId),
+    [expenses, typeId],
+  );
+
+  const labelFor = (options: DropdownOption[], value: string) =>
+    options.find(option => option.value === value)?.label ?? '';
 
   const onDateChange = (event: any, selectedDate?: Date) => {
     setShowDatePicker(Platform.OS === 'ios');
@@ -54,28 +95,141 @@ const CreateExpenses = () => {
 
   const onSelectPaymentMode = (mode: string) => {
     setPaymentMode(mode);
-    setShowPaymentModeDropdown(false);
-    if (mode === 'Cash') {
+    setOpenDropdown(null);
+    if (mode === CASH_PAYMENT_MODE) {
       setPaymentReference('');
     }
   };
 
-  const onSave = () => {
-    const newExpense = {
-      id: Date.now().toString(),
-      date: date.toISOString(),
-      payee,
-      paymentMode,
-      paymentReference: paymentMode === 'Cash' ? undefined : paymentReference,
-      description,
-      expense,
-      category,
-      amount,
-    };
-    console.log('New expense:', newExpense);
-
-    navigation.goBack();
+  const onSelectType = (selectedTypeId: string) => {
+    setTypeId(selectedTypeId);
+    setOpenDropdown(null);
+    // Purani category naye type ke under nahi hogi, is liye reset.
+    setCategoryId('');
   };
+
+  const onSelectCategory = (selectedCategoryId: string) => {
+    setCategoryId(selectedCategoryId);
+    setOpenDropdown(null);
+  };
+
+  const onSave = async () => {
+    const parsedAmount = Number(amount);
+
+    if (!payee.trim()) {
+      Toast.show({ type: 'error', text1: 'Payee is required' });
+      return;
+    }
+
+    if (!typeId) {
+      Toast.show({ type: 'error', text1: 'Select an expense type' });
+      return;
+    }
+
+    if (!categoryId) {
+      Toast.show({ type: 'error', text1: 'Select a category' });
+      return;
+    }
+
+    if (!amount.trim() || isNaN(parsedAmount) || parsedAmount <= 0) {
+      Toast.show({ type: 'error', text1: 'Enter a valid amount' });
+      return;
+    }
+
+    try {
+      const response = await createExpense({
+        body: {
+          date: date.toISOString(),
+          payee: payee.trim(),
+          paymentMode,
+          ...(paymentMode !== CASH_PAYMENT_MODE && {
+            paymentReference: paymentReference.trim(),
+          }),
+          description: description.trim(),
+          type: typeId,
+          category: categoryId,
+          amount: parsedAmount,
+        },
+      });
+
+      // List ko dobara fetch karwao taake nayi expense turant dikhe.
+      await queryClient.invalidateQueries({ queryKey: ['expenses'] });
+
+      Toast.show({
+        type: 'success',
+        text1: 'Success',
+        text2: response?.message || 'Expense created successfully',
+      });
+
+      navigation.goBack();
+    } catch (err: any) {
+      Toast.show({
+        type: 'error',
+        text1: 'Could not create expense',
+        text2: err?.message || 'Something went wrong. Please try again.',
+      });
+    }
+  };
+
+  const dropdownConfig: Record<
+    Exclude<OpenDropdown, null>,
+    { options: DropdownOption[]; selected: string; onSelect: (v: string) => void }
+  > = {
+    paymentMode: {
+      options: PAYMENT_MODES,
+      selected: paymentMode,
+      onSelect: onSelectPaymentMode,
+    },
+    type: {
+      options: typeOptions,
+      selected: typeId,
+      onSelect: onSelectType,
+    },
+    category: {
+      options: categoryOptions,
+      selected: categoryId,
+      onSelect: onSelectCategory,
+    },
+  };
+
+  const activeDropdown = openDropdown ? dropdownConfig[openDropdown] : null;
+
+  const renderDropdownField = (
+    label: string,
+    placeholder: string,
+    displayValue: string,
+    dropdown: Exclude<OpenDropdown, null>,
+    disabled?: boolean,
+  ) => (
+    <View style={styles.field}>
+      <Text style={styles.label}>{label}</Text>
+      <TouchableOpacity
+        style={[styles.inputRow, disabled && styles.disabledRow]}
+        activeOpacity={0.7}
+        disabled={disabled}
+        onPress={() => setOpenDropdown(dropdown)}
+      >
+        <Text
+          style={[
+            styles.input,
+            styles.flex1,
+            !displayValue && styles.placeholderText,
+          ]}
+        >
+          {displayValue || placeholder}
+        </Text>
+        {isLoadingOptions && dropdown !== 'paymentMode' ? (
+          <ActivityIndicator size="small" color={colors.gray} />
+        ) : (
+          <Ionicons
+            name="chevron-down"
+            size={width * 0.05}
+            color={colors.gray}
+          />
+        )}
+      </TouchableOpacity>
+    </View>
+  );
 
   return (
     <View style={styles.container}>
@@ -97,7 +251,11 @@ const CreateExpenses = () => {
             onPress={() => setShowDatePicker(true)}
           >
             <Text style={styles.input}>{formatDisplayDate(date)}</Text>
-            <Ionicons name="calendar-outline" size={width * 0.05} color={colors.gray} />
+            <Ionicons
+              name="calendar-outline"
+              size={width * 0.05}
+              color={colors.gray}
+            />
           </TouchableOpacity>
 
           {showDatePicker && (
@@ -123,29 +281,24 @@ const CreateExpenses = () => {
           />
         </View>
 
-        {/* Payment mode - dropdown */}
-        <View style={styles.field}>
-          <Text style={styles.label}>Payment mode</Text>
-          <TouchableOpacity
-            style={styles.inputRow}
-            activeOpacity={0.7}
-            onPress={() => setShowPaymentModeDropdown(true)}
-          >
-            <Text style={[styles.input, styles.flex1]}>{paymentMode}</Text>
-            <Ionicons name="chevron-down" size={width * 0.05} color={colors.gray} />
-          </TouchableOpacity>
-        </View>
+        {/* Payment mode */}
+        {renderDropdownField(
+          'Payment mode',
+          'Select payment mode',
+          getPaymentModeLabel(paymentMode),
+          'paymentMode',
+        )}
 
         {/* Payment reference - sirf Cash na ho tab dikhega */}
-        {paymentMode !== 'Cash' && (
+        {paymentMode !== CASH_PAYMENT_MODE && (
           <View style={styles.field}>
-            <Text style={styles.label}>
-              {paymentMode === 'Card' ? 'Reference No.' : 'Reference No.'}
-            </Text>
+            <Text style={styles.label}>Reference No.</Text>
             <TextInput
               style={[styles.input, styles.inputBox]}
               placeholder={
-                paymentMode === 'Card' ? 'e.g. 4242XXXXXXXX' : 'e.g. Cheque / Ref No.'
+                paymentMode === 'credit card'
+                  ? 'e.g. 4242XXXXXXXX'
+                  : 'e.g. Cheque / Ref No.'
               }
               placeholderTextColor={colors.gray}
               value={paymentReference}
@@ -168,30 +321,24 @@ const CreateExpenses = () => {
           />
         </View>
 
-        {/* Expense */}
-        <View style={styles.field}>
-          <Text style={styles.label}>Expense</Text>
-          <TextInput
-            style={[styles.input, styles.inputBox]}
-            placeholder="e.g. Stationery"
-            placeholderTextColor={colors.gray}
-            value={expense}
-            onChangeText={setExpense}
-          />
-        </View>
+        {/* Expense type - picklist */}
+        {renderDropdownField(
+          'Expense',
+          isLoadingOptions ? 'Loading...' : 'Select expense type',
+          labelFor(typeOptions, typeId),
+          'type',
+        )}
 
-        <View style={styles.field}>
-          <Text style={styles.label}>Category</Text>
-          <TextInput
-            style={[styles.input, styles.inputBox]}
-            placeholder="e.g. Office supplies category"
-            placeholderTextColor={colors.gray}
-            value={category}
-            onChangeText={setCategory}
-          />
-        </View>
+        {/* Category - picklist, chuni hui type ke under */}
+        {renderDropdownField(
+          'Category',
+          typeId ? 'Select category' : 'Select an expense type first',
+          labelFor(categoryOptions, categoryId),
+          'category',
+          !typeId,
+        )}
 
-
+        {/* Amount */}
         <View style={styles.field}>
           <Text style={styles.label}>Amount</Text>
           <View style={styles.inputRow}>
@@ -208,8 +355,9 @@ const CreateExpenses = () => {
         </View>
 
         <CustomButton
-          text="Save Expense"
+          text={isPending ? 'Saving...' : 'Save Expense'}
           onPress={onSave}
+          disabled={isPending}
           btnHeight={height * 0.065}
           btnWidth={width * 0.9}
           backgroundColor={colors.mantineBlue}
@@ -219,37 +367,52 @@ const CreateExpenses = () => {
       </KeyboardAwareScrollView>
 
       <Modal
-        visible={showPaymentModeDropdown}
+        visible={activeDropdown !== null}
         transparent
         animationType="fade"
-        onRequestClose={() => setShowPaymentModeDropdown(false)}
+        onRequestClose={() => setOpenDropdown(null)}
       >
         <TouchableOpacity
           style={styles.modalOverlay}
           activeOpacity={1}
-          onPress={() => setShowPaymentModeDropdown(false)}
+          onPress={() => setOpenDropdown(null)}
         >
-          <View style={styles.dropdownBox}>
-            {PAYMENT_MODES.map(mode => (
-              <TouchableOpacity
-                key={mode}
-                style={styles.dropdownOption}
-                onPress={() => onSelectPaymentMode(mode)}
-              >
-                <Text
-                  style={[
-                    styles.dropdownOptionText,
-                    mode === paymentMode && styles.dropdownOptionTextSelected,
-                  ]}
+          <ScrollView
+            style={styles.dropdownBox}
+            contentContainerStyle={styles.dropdownContent}
+            keyboardShouldPersistTaps="handled"
+          >
+            {activeDropdown?.options.length === 0 ? (
+              <Text style={styles.dropdownEmptyText}>
+                No options available.
+              </Text>
+            ) : (
+              activeDropdown?.options.map(option => (
+                <TouchableOpacity
+                  key={option.value}
+                  style={styles.dropdownOption}
+                  onPress={() => activeDropdown.onSelect(option.value)}
                 >
-                  {mode}
-                </Text>
-                {mode === paymentMode && (
-                  <Ionicons name="checkmark" size={width * 0.05} color={colors.mantineBlue} />
-                )}
-              </TouchableOpacity>
-            ))}
-          </View>
+                  <Text
+                    style={[
+                      styles.dropdownOptionText,
+                      option.value === activeDropdown.selected &&
+                        styles.dropdownOptionTextSelected,
+                    ]}
+                  >
+                    {option.label}
+                  </Text>
+                  {option.value === activeDropdown.selected && (
+                    <Ionicons
+                      name="checkmark"
+                      size={width * 0.05}
+                      color={colors.mantineBlue}
+                    />
+                  )}
+                </TouchableOpacity>
+              ))
+            )}
+          </ScrollView>
         </TouchableOpacity>
       </Modal>
     </View>
@@ -282,6 +445,9 @@ const styles = StyleSheet.create({
     color: colors.black,
     padding: 0,
   },
+  placeholderText: {
+    color: colors.gray,
+  },
   inputBox: {
     borderWidth: 1,
     borderColor: colors.border,
@@ -301,6 +467,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: width * 0.04,
     paddingVertical: height * 0.016,
+  },
+  disabledRow: {
+    opacity: 0.6,
   },
   flex1: {
     flex: 1,
@@ -322,11 +491,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: width * 0.08,
   },
   dropdownBox: {
+    flexGrow: 0,
     backgroundColor: colors.white,
     borderRadius: 12,
-    paddingVertical: height * 0.01,
     borderWidth: 1,
     borderColor: colors.border,
+    maxHeight: height * 0.5,
+  },
+  dropdownContent: {
+    paddingVertical: height * 0.01,
   },
   dropdownOption: {
     flexDirection: 'row',
@@ -344,6 +517,14 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.UrbanistBold,
     fontWeight: '600',
     color: colors.mantineBlue,
+  },
+  dropdownEmptyText: {
+    paddingHorizontal: width * 0.05,
+    paddingVertical: height * 0.018,
+    textAlign: 'center',
+    fontSize: fontSizes.sm,
+    fontFamily: fontFamily.UrbanistMedium,
+    color: colors.gray,
   },
 });
 

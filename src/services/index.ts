@@ -142,6 +142,50 @@ instance.interceptors.request.use(
   },
 );
 
+export interface ApiError extends Error {
+  status?: number;
+  data?: unknown;
+}
+
+/**
+ * Server har error ek jaisa nahi bhejta (kabhi `message`, kabhi `error`, kabhi
+ * validation `errors` array, aur unknown route par HTML). Pehle jo mile wahi
+ * message banate hain; kuch na mile to kam se kam status code dikha dete hain
+ * taake "Something went wrong" par debugging na atke.
+ */
+const buildApiError = (error: any): ApiError => {
+  const status: number | undefined = error?.response?.status;
+  const data = error?.response?.data;
+
+  const validationMessage =
+    Array.isArray(data?.errors) && data.errors.length
+      ? data.errors[0]?.message || data.errors[0]?.msg
+      : undefined;
+
+  const message =
+    (typeof data?.message === 'string' && data.message) ||
+    (typeof data?.error === 'string' && data.error) ||
+    validationMessage ||
+    (status
+      ? `Request failed with status ${status}.`
+      : error?.message || 'Something went wrong. Please try again.');
+
+  const apiError: ApiError = new Error(message);
+  apiError.status = status;
+  apiError.data = data;
+
+  if (__DEV__) {
+    console.log('[api] request failed', {
+      method: error?.config?.method,
+      url: error?.config?.url,
+      status,
+      data,
+    });
+  }
+
+  return apiError;
+};
+
 instance.interceptors.response.use(
   (response: AxiosResponse) => {
     store.dispatch(hideLoader('idle'));
@@ -180,10 +224,7 @@ instance.interceptors.response.use(
           const accessToken = normalizeAuthToken(token);
 
           if (!accessToken) {
-            reject(
-              error.response?.data?.message ||
-                'Something went wrong. Please try again.',
-            );
+            reject(buildApiError(error));
             return;
           }
 
@@ -202,10 +243,7 @@ instance.interceptors.response.use(
       });
     }
 
-    return Promise.reject(
-      error.response?.data?.message ||
-        'Something went wrong. Please try again.',
-    );
+    return Promise.reject(buildApiError(error));
   },
 );
 
