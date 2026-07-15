@@ -40,6 +40,7 @@ export interface GetExpensesResponse {
 export interface GetExpensesParams {
   page?: number;
   pageSize?: number;
+  sort?: string;
 }
 
 // ---------- GET /expenses (list) ----------
@@ -83,7 +84,6 @@ export const useCreateExpense = () => {
     method: 'POST',
     endPoint: '/expenses',
   });
-
   const createExpense = useCallback(
     ({ body }: CreateExpenseMutationPayload) => mutation.mutateAsync({ body }),
     [mutation],
