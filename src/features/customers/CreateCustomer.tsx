@@ -1,8 +1,10 @@
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { Alert, Platform, StyleSheet, Text, TextInput, View } from 'react-native';
+import Toast from 'react-native-toast-message';
+import { Platform, StyleSheet, Text, TextInput, View } from 'react-native';
 import { fontFamily } from '../../assets/Fonts';
 import { CustomButton, TopHeader } from '../../components';
 import { RootStackParamList } from '../../navigation/types';
@@ -15,6 +17,7 @@ type Nav = NativeStackNavigationProp<RootStackParamList>;
 
 const CreateCustomer = () => {
   const navigation = useNavigation<Nav>();
+  const queryClient = useQueryClient();
   const { createCustomer, isPending } = useCreateCustomer();
 
   const [title, setTitle] = useState('');
@@ -32,12 +35,12 @@ const CreateCustomer = () => {
 
   const onSave = async () => {
     if (!title.trim()) {
-      Alert.alert('Validation', 'Title is required.');
+      Toast.show({ type: 'error', text1: 'Title is required' });
       return;
     }
 
     try {
-      await createCustomer({
+      const response = await createCustomer({
         body: {
           title,
           company: company || undefined,
@@ -55,10 +58,23 @@ const CreateCustomer = () => {
           notes: notes || undefined,
         },
       });
+
+      await queryClient.invalidateQueries({ queryKey: ['customers'] });
+
+      Toast.show({
+        type: 'success',
+        text1: 'Success',
+        text2: response?.message || 'Customer created successfully',
+      });
+
       navigation.goBack();
-    } catch (err) {
+    } catch (err: any) {
       console.log('Create customer error:', err);
-      Alert.alert('Error', 'Failed to save customer. Please try again.');
+      Toast.show({
+        type: 'error',
+        text1: 'Could not create customer',
+        text2: err?.message || 'Something went wrong. Please try again.',
+      });
     }
   };
 

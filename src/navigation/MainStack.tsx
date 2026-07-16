@@ -23,6 +23,7 @@ import EditCustomer from '../features/customers/EditCustomer';
 import VendorsFlatList from '../features/vendors/VendorsFlatList';
 import CreateVendor from '../features/vendors/CreateVendor';
 import EditVendor from '../features/vendors/EditVendor';
+import ChangePasswordScreen from '../features/auth/ChangePasswordScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -51,7 +52,7 @@ const MainStack: React.FC = () => {
           <Stack.Screen name='Vendors' component={VendorsFlatList}/>
           <Stack.Screen name='CreateVendor' component={CreateVendor}/>
           <Stack.Screen name='EditVendor' component={EditVendor}/>
-          {/* <Stack.Screen name="ChangePasswordScreen" component={ChangePasswordScreen} /> */}
+          <Stack.Screen name="ChangePasswordScreen" component={ChangePasswordScreen} />
         </Stack.Navigator>
       </RolesProvider>
     </UsersProvider>

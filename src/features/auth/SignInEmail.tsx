@@ -72,13 +72,7 @@ const SignInEmail = ({ navigation }: Props) => {
 
       dispatch(setToken(accessToken));
       dispatch(setRefreshToken(refreshToken || null));
-      dispatch(
-      setUser({
-        _id: response?.id,
-        name: response?.name,
-        email: response?.email,
-      }),
-      );
+      dispatch(setUser(user ?? { email }));
       dispatch(setUserEmail(user?.email ?? email));
       dispatch(setLogin());
 

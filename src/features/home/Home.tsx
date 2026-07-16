@@ -7,9 +7,12 @@ import {
   View,
 } from 'react-native';
 
+import { useSelector } from 'react-redux';
 import { fontFamily } from '../../assets/Fonts';
 import images from '../../assets/Images';
 import { SideDrawer, TopHeader } from '../../components';
+import { RootState } from '../../redux/store';
+import { getDisplayName } from '../../utils/user';
 import { height, width } from '../../utils';
 import { colors } from '../../utils/colors';
 import { fontSizes } from '../../utils/fontSizes';
@@ -17,6 +20,10 @@ import PnlCard from '../../components/PnlCard';
 
 const Home = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const user = useSelector((state: RootState) => state.role.user);
+  const userEmail = useSelector((state: RootState) => state.role.userEmail);
+  const displayName = getDisplayName(user, userEmail);
 
   return (
     <View style={{ flex: 1, marginBottom: height * 0.07 }}>
@@ -30,13 +37,15 @@ const Home = () => {
       <SideDrawer visible={drawerOpen} onClose={() => setDrawerOpen(false)} />
 
 
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <Text style={styles.welcome}>Welcome Mujtaba</Text>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <Text style={styles.welcome} numberOfLines={1}>
+          Welcome {displayName}
+        </Text>
 
-          <PnlCard />
+        <PnlCard />
 
-          <View style={{ height: height * 0.08 }} />
-        </ScrollView>
+        <View style={{ height: height * 0.08 }} />
+      </ScrollView>
 
     </View>
   );
@@ -45,7 +54,8 @@ const Home = () => {
 const styles = StyleSheet.create({
   welcome: {
     fontFamily: fontFamily.UrbanistSemiBold,
-    fontSize: fontSizes.xl,
+    fontSize: fontSizes.lg2,
+    fontWeight: '600',
     color: colors.black,
     left: width * 0.05,
   },

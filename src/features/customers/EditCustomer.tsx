@@ -1,7 +1,9 @@
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import Toast from 'react-native-toast-message';
 import { Alert, Platform, StyleSheet, Text, TextInput, View } from 'react-native';
 import { fontFamily } from '../../assets/Fonts';
 import { CustomButton, TopHeader } from '../../components';
@@ -17,6 +19,7 @@ type EditCustomerRoute = RouteProp<RootStackParamList, 'EditCustomer'>;
 const EditCustomer = () => {
   const navigation = useNavigation<Nav>();
   const route = useRoute<EditCustomerRoute>();
+  const queryClient = useQueryClient();
   const { customer } = route.params;
 
   const { updateCustomer, isPending: isUpdating } = useUpdateCustomer();
@@ -37,12 +40,12 @@ const EditCustomer = () => {
 
   const onUpdate = async () => {
     if (!title.trim()) {
-      Alert.alert('Validation', 'Title is required.');
+      Toast.show({ type: 'error', text1: 'Title is required' });
       return;
     }
 
     try {
-      await updateCustomer({
+      const response = await updateCustomer({
         id: customer._id,
         body: {
           title,
@@ -61,10 +64,23 @@ const EditCustomer = () => {
           notes: notes || undefined,
         },
       });
+
+      await queryClient.invalidateQueries({ queryKey: ['customers'] });
+
+      Toast.show({
+        type: 'success',
+        text1: 'Success',
+        text2: response?.message || 'Customer updated successfully',
+      });
+
       navigation.goBack();
-    } catch (err) {
+    } catch (err: any) {
       console.log('Update customer error:', err);
-      Alert.alert('Error', 'Failed to update customer. Please try again.');
+      Toast.show({
+        type: 'error',
+        text1: 'Could not update customer',
+        text2: err?.message || 'Something went wrong. Please try again.',
+      });
     }
   };
 
@@ -79,11 +95,24 @@ const EditCustomer = () => {
           style: 'destructive',
           onPress: async () => {
             try {
-              await deleteCustomer({ id: customer._id });
+              const response = await deleteCustomer({ id: customer._id });
+
+              await queryClient.invalidateQueries({ queryKey: ['customers'] });
+
+              Toast.show({
+                type: 'success',
+                text1: 'Success',
+                text2: response?.message || 'Customer deleted successfully',
+              });
+
               navigation.goBack();
-            } catch (err) {
+            } catch (err: any) {
               console.log('Delete customer error:', err);
-              Alert.alert('Error', 'Failed to delete customer.');
+              Toast.show({
+                type: 'error',
+                text1: 'Could not delete customer',
+                text2: err?.message || 'Something went wrong. Please try again.',
+              });
             }
           },
         },

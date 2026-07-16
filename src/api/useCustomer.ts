@@ -18,8 +18,8 @@ export interface Customer {
   email?: string;
   phone?: string;
   address?: Address;
-  designation?: string; 
-  source?: string; 
+  designation?: string;
+  source?: string;
   notes?: string;
   createdBy?: string;
 }
@@ -62,7 +62,7 @@ export const useCustomer = (id: string) => {
     ['customers', id],
     {
       method: 'GET',
-      endPoint: `/customers/${id}`,
+      endPoint: `customers/${id}`,
     },
     { enabled: !!id },
   );
@@ -94,7 +94,7 @@ interface CreateCustomerMutationPayload {
 export const useCreateCustomer = () => {
   const mutation = useApiMutation<CreateCustomerResponse, CreateCustomerRequestBody>({
     method: 'POST',
-    endPoint: '/customers',
+    endPoint: 'customers',
   });
   const createCustomer = useCallback(
     ({ body }: CreateCustomerMutationPayload) => mutation.mutateAsync({ body }),
@@ -121,7 +121,7 @@ interface UpdateCustomerMutationPayload {
 export const useUpdateCustomer = () => {
   const mutation = useApiMutation<UpdateCustomerResponse, UpdateCustomerRequestBody>({
     method: 'PATCH',
-    endPoint: '/customers',
+    endPoint: 'customers',
   });
   const updateCustomer = useCallback(
     ({ id, body }: UpdateCustomerMutationPayload) =>
@@ -150,7 +150,7 @@ export const useDeleteCustomer = () => {
 
   const deleteCustomer = useCallback(
     ({ id }: DeleteCustomerMutationPayload) =>
-      mutation.mutateAsync({ endPoint: `/customers/${id}` }),
+      mutation.mutateAsync({ endPoint: `customers/${id}` }),
     [mutation],
   );
 

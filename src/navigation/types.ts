@@ -4,7 +4,7 @@
  * navigator components (avoids circular imports).
  */
 import { Expense } from '../api/useExpenses';
-import { Customer } from '../features/customers/types';
+import { Customer } from '../api/useCustomer';
 import { PettyCashRow } from '../features/pettyCash/types';
 import { Vendor } from '../features/vendors/types';
 

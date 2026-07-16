@@ -9,9 +9,13 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
 import { fontFamily } from '../../assets/Fonts';
 import { CustomButton, TopHeader } from '../../components';
 import { RootStackParamList } from '../../navigation/types';
+import { RootState } from '../../redux/store';
+import { removeUser } from '../../redux/slice/roleSlice';
+import { getDisplayName, getDisplayEmail } from '../../utils/user';
 import { height, width } from '../../utils';
 import { colors } from '../../utils/colors';
 import { fontSizes } from '../../utils/fontSizes';
@@ -19,17 +23,29 @@ import { fontSizes } from '../../utils/fontSizes';
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
-const MENU_ITEMS: { icon: IconName; label: string }[] = [
-  // { icon: 'person-outline', label: 'Edit Profile' },
-  // { icon: 'notifications-outline', label: 'Notifications' },
-  // { icon: 'settings-outline', label: 'Settings' },
-  { icon: 'lock-closed-outline', label: 'Change Password' },
+// Only routes that don't require params can be opened straight from the menu.
+type ParamlessRoute = {
+  [K in keyof RootStackParamList]: RootStackParamList[K] extends undefined ? K : never;
+}[keyof RootStackParamList];
+
+const MENU_ITEMS: { icon: IconName; label: string; route: ParamlessRoute }[] = [
+  // { icon: 'person-outline', label: 'Edit Profile', route: 'EditProfile' },
+  // { icon: 'notifications-outline', label: 'Notifications', route: 'Notifications' },
+  // { icon: 'settings-outline', label: 'Settings', route: 'Settings' },
+  { icon: 'lock-closed-outline', label: 'Change Password', route: 'ChangePasswordScreen' },
 ];
 
 const Profile = () => {
   const navigation = useNavigation<Nav>();
+  const dispatch = useDispatch();
+
+  const user = useSelector((state: RootState) => state.role.user);
+  const userEmail = useSelector((state: RootState) => state.role.userEmail);
+  const displayName = getDisplayName(user, userEmail);
+  const displayEmail = getDisplayEmail(user, userEmail);
 
   const handleLogout = () => {
+    dispatch(removeUser());
     navigation.navigate('SignInEmail');
   };
 
@@ -46,8 +62,14 @@ const Profile = () => {
           <View style={styles.avatar}>
             <Ionicons name="person" size={width * 0.12} color={colors.white} />
           </View>
-          <Text style={styles.name}>Mujtaba</Text>
-          <Text style={styles.email}>mujtaba@gifts360.com</Text>
+          <Text style={styles.name} numberOfLines={1}>
+            {displayName}
+          </Text>
+          {!!displayEmail && (
+            <Text style={styles.email} numberOfLines={1}>
+              {displayEmail}
+            </Text>
+          )}
         </View>
 
         {/* Settings menu */}
@@ -56,6 +78,7 @@ const Profile = () => {
             <TouchableOpacity
               key={item.label}
               activeOpacity={0.6}
+              onPress={() => navigation.navigate(item.route)}
               style={[
                 styles.row,
                 index === MENU_ITEMS.length - 1 && styles.rowLast,

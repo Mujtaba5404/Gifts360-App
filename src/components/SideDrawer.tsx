@@ -13,8 +13,11 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSelector } from 'react-redux';
 import { fontFamily } from '../assets/Fonts';
 import { RootStackParamList } from '../navigation/types';
+import { RootState } from '../redux/store';
+import { getDisplayName, getDisplayEmail } from '../utils/user';
 import { height, width } from '../utils';
 import { colors } from '../utils/colors';
 import { fontSizes } from '../utils/fontSizes';
@@ -45,6 +48,11 @@ interface SideDrawerProps {
 const SideDrawer = ({ visible, onClose }: SideDrawerProps) => {
   const navigation = useNavigation<Nav>();
   const insets = useSafeAreaInsets();
+
+  const user = useSelector((state: RootState) => state.role.user);
+  const userEmail = useSelector((state: RootState) => state.role.userEmail);
+  const displayName = getDisplayName(user, userEmail);
+  const displayEmail = getDisplayEmail(user, userEmail);
 
   const [rendered, setRendered] = useState(visible);
   const translateX = useRef(new Animated.Value(-DRAWER_WIDTH)).current;
@@ -112,8 +120,14 @@ const SideDrawer = ({ visible, onClose }: SideDrawerProps) => {
                 />
               </View>
               <View style={styles.profileInfo}>
-                <Text style={styles.name}>Mujtaba</Text>
-                <Text style={styles.email}>mujtaba@gifts360.com</Text>
+                <Text style={styles.name} numberOfLines={1}>
+                  {displayName}
+                </Text>
+                {!!displayEmail && (
+                  <Text style={styles.email} numberOfLines={1}>
+                    {displayEmail}
+                  </Text>
+                )}
               </View>
             </View>
           </View>
