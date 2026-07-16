@@ -231,25 +231,6 @@ const CustomersFlatList = () => {
       <TopHeader text="Customers" isBack />
 
       <View style={styles.content}>
-        <CustomButton
-          text="Add Customer"
-          onPress={() => navigation.navigate('CreateCustomer')}
-          btnHeight={height * 0.06}
-          btnWidth={width * 0.9}
-          backgroundColor="transparent"
-          textColor={colors.mantineBlue}
-          borderColor={colors.mantineBlue}
-          borderWidth={1}
-          borderRadius={8}
-          leftIcon={
-            <Ionicons
-              name="add"
-              size={width * 0.06}
-              color={colors.mantineBlue}
-            />
-          }
-        />
-
         {showSearch && (
           <View style={styles.searchBar}>
             <Ionicons name="search" size={width * 0.045} color={colors.gray} />
@@ -273,6 +254,17 @@ const CustomersFlatList = () => {
 
         {renderList()}
       </View>
+
+      <TouchableOpacity
+        style={styles.fab}
+        activeOpacity={0.85}
+        onPress={() => navigation.navigate('CreateCustomer')}
+      >
+        <View style={styles.fabIcon}>
+          <Ionicons name="add" size={width * 0.055} color={colors.mantineBlue} />
+        </View>
+        <Text style={styles.fabText}>Add Customer</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -285,7 +277,6 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: width * 0.05,
-    paddingTop: height * 0.03,
   },
   searchBar: {
     flexDirection: 'row',
@@ -325,8 +316,41 @@ const styles = StyleSheet.create({
   },
   list: {
     marginTop: height * 0.025,
-    paddingBottom: height * 0.04,
+    paddingBottom: height * 0.12,
     gap: height * 0.015,
+  },
+  fab: {
+    position: 'absolute',
+    right: width * 0.06,
+    bottom: height * 0.035,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: width * 0.02,
+    height: height * 0.062,
+    width: width * 0.4,
+    paddingLeft: width * 0.02,
+    paddingRight: width * 0.05,
+    borderRadius: height * 0.03,
+    backgroundColor: colors.mantineBlue,
+    shadowColor: colors.mantineBlue,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+  fabIcon: {
+    width: width * 0.09,
+    height: width * 0.09,
+    borderRadius: width * 0.045,
+    backgroundColor: colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  fabText: {
+    fontSize: fontSizes.sm,
+    fontFamily: fontFamily.UrbanistBold,
+    fontWeight: '700',
+    color: colors.white,
   },
   card: {
     flexDirection: 'row',
