@@ -18,6 +18,7 @@ import { height, width } from '../../utils';
 import { colors } from '../../utils/colors';
 import { fontSizes } from '../../utils/fontSizes';
 import { Customer, useCustomers } from '../../api/useCustomer';
+import capitalizeLetters from '../../utils/capitalizeLetters';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
@@ -32,9 +33,6 @@ const AVATAR_COLORS = [
   '#9C36B5',
 ];
 
-// Some fields (designation, source, company) can come back either as a plain
-// string or as a populated picklist object, e.g. { _id, title, value, ... }.
-// Coerce any of those shapes to a safe display string.
 const pickText = (value: unknown): string => {
   if (value == null) return '';
   if (typeof value === 'string') return value;
@@ -49,7 +47,13 @@ const pickText = (value: unknown): string => {
 const formatAddress = (customer: Customer) => {
   const { address } = customer;
   if (!address) return '';
-  return [address.line1, address.line2, address.city, address.state, address.country]
+  return [
+    address.line1,
+    address.line2,
+    address.city,
+    address.state,
+    address.country,
+  ]
     .filter(Boolean)
     .join(', ');
 };
@@ -73,13 +77,10 @@ const CustomersFlatList = () => {
   const navigation = useNavigation<Nav>();
   const [query, setQuery] = useState('');
 
-  const {
-    data,
-    isLoading,
-    isError,
-    refetch,
-    isRefetching,
-  } = useCustomers({ page: 1, pageSize: 50 });
+  const { data, isLoading, isError, refetch, isRefetching } = useCustomers({
+    page: 1,
+    pageSize: 50,
+  });
 
   const customers = data?.data ?? [];
 
@@ -113,42 +114,42 @@ const CustomersFlatList = () => {
         activeOpacity={0.6}
         onPress={() => navigation.navigate('EditCustomer', { customer: item })}
       >
-        <View style={[styles.avatar, { backgroundColor: getAvatarColor(item._id) }]}>
+        <View
+          style={[styles.avatar, { backgroundColor: getAvatarColor(item._id) }]}
+        >
           <Text style={styles.avatarText}>{getInitials(item.title)}</Text>
         </View>
 
         <View style={styles.info}>
           <Text style={styles.name} numberOfLines={1}>
-            {item.title}
+            {capitalizeLetters(item.title)}
           </Text>
           {!!subtitle && (
             <Text style={styles.subtitle} numberOfLines={1}>
-              {subtitle}
+              {capitalizeLetters(subtitle)}
             </Text>
           )}
           {!!item.phone && (
             <View style={styles.metaRow}>
-              <Ionicons name="call-outline" size={width * 0.032} color={colors.gray} />
+              <Ionicons
+                name="call-outline"
+                size={width * 0.032}
+                color={colors.gray}
+              />
               <Text style={styles.meta} numberOfLines={1}>
                 {item.phone}
               </Text>
             </View>
           )}
-          {!!address && (
+          {/* {!!address && (
             <View style={styles.metaRow}>
               <Ionicons name="location-outline" size={width * 0.032} color={colors.gray} />
               <Text style={styles.meta} numberOfLines={1} ellipsizeMode="tail">
                 {address}
               </Text>
             </View>
-          )}
+          )} */}
         </View>
-
-        <Ionicons
-          name="chevron-forward"
-          size={width * 0.05}
-          color={colors.gray}
-        />
       </TouchableOpacity>
     );
   };
@@ -165,7 +166,11 @@ const CustomersFlatList = () => {
     if (isError) {
       return (
         <View style={styles.centerState}>
-          <Ionicons name="cloud-offline-outline" size={width * 0.14} color={colors.lightGray} />
+          <Ionicons
+            name="cloud-offline-outline"
+            size={width * 0.14}
+            color={colors.lightGray}
+          />
           <Text style={styles.emptyText}>Failed to load customers.</Text>
           <CustomButton
             text="Retry"
@@ -183,7 +188,11 @@ const CustomersFlatList = () => {
     if (customers.length === 0) {
       return (
         <View style={styles.centerState}>
-          <Ionicons name="people-outline" size={width * 0.14} color={colors.lightGray} />
+          <Ionicons
+            name="people-outline"
+            size={width * 0.14}
+            color={colors.lightGray}
+          />
           <Text style={styles.emptyText}>No customers added yet.</Text>
         </View>
       );
@@ -192,8 +201,14 @@ const CustomersFlatList = () => {
     if (filteredCustomers.length === 0) {
       return (
         <View style={styles.centerState}>
-          <Ionicons name="search-outline" size={width * 0.14} color={colors.lightGray} />
-          <Text style={styles.emptyText}>No customers match "{query.trim()}".</Text>
+          <Ionicons
+            name="search-outline"
+            size={width * 0.14}
+            color={colors.lightGray}
+          />
+          <Text style={styles.emptyText}>
+            No customers match "{query.trim()}".
+          </Text>
         </View>
       );
     }
@@ -246,7 +261,11 @@ const CustomersFlatList = () => {
             />
             {query.length > 0 && (
               <TouchableOpacity onPress={() => setQuery('')} hitSlop={8}>
-                <Ionicons name="close-circle" size={width * 0.05} color={colors.gray} />
+                <Ionicons
+                  name="close-circle"
+                  size={width * 0.05}
+                  color={colors.gray}
+                />
               </TouchableOpacity>
             )}
           </View>
@@ -261,7 +280,11 @@ const CustomersFlatList = () => {
         onPress={() => navigation.navigate('CreateCustomer')}
       >
         <View style={styles.fabIcon}>
-          <Ionicons name="add" size={width * 0.055} color={colors.mantineBlue} />
+          <Ionicons
+            name="add"
+            size={width * 0.055}
+            color={colors.mantineBlue}
+          />
         </View>
         <Text style={styles.fabText}>Add Customer</Text>
       </TouchableOpacity>

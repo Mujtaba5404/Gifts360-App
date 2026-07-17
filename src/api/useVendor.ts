@@ -11,32 +11,33 @@ export interface Address {
     countryCode?: string;
 }
 
-export interface Customer {
+export interface Vendor {
     _id: string;
     title: string;
-    company?: string;
     email?: string;
     phone?: string;
+    secondaryPhone?: string;
     address?: Address;
-    designation?: string;
-    source?: string;
-    notes?: string;
+    type?: string;
+    vendorPercentage?: number;
+    categories?: string[];
+    services?: string[];
     createdBy?: string;
 }
 
-export interface CustomersMeta {
+export interface VendorsMeta {
     totalCount: number;
     totalPages: number;
     page: number;
     pageSize: number;
 }
 
-export interface GetCustomersResponse {
-    data: Customer[];
-    meta: CustomersMeta;
+export interface GetVendorsResponse {
+    data: Vendor[];
+    meta: VendorsMeta;
 }
 
-export interface GetCustomersParams {
+export interface GetVendorsParams {
     page?: number;
     pageSize?: number;
     sort?: string;
@@ -44,12 +45,12 @@ export interface GetCustomersParams {
 
 // ---------- GET /vendors (list) ----------
 
-export const useVendors = (params?: GetCustomersParams) => {
-    return useApiQuery<GetCustomersResponse>(
+export const useVendors = (params?: GetVendorsParams) => {
+    return useApiQuery<GetVendorsResponse>(
         ['vendor', params],
         {
             method: 'GET',
-            endPoint: '/vendor',
+            endPoint: 'vendors',
             requestConfig: { params },
         },
     );
@@ -58,11 +59,11 @@ export const useVendors = (params?: GetCustomersParams) => {
 // ---------- GET /vendor/:id (single) ----------
 
 export const useVendor = (id: string) => {
-    return useApiQuery<{ success: boolean; data: Customer }>(
+    return useApiQuery<{ success: boolean; data: Vendor }>(
         ['vendor', id],
         {
             method: 'GET',
-            endPoint: `vendor/${id}`,
+            endPoint: `vendors/${id}`,
         },
         { enabled: !!id },
     );
@@ -70,34 +71,35 @@ export const useVendor = (id: string) => {
 
 // ---------- POST /vendor (create) ----------
 
-export interface CreateCustomerRequestBody {
+export interface CreateVendorRequestBody {
     title: string;
-    company?: string;
     email?: string;
     phone?: string;
+    secondaryPhone?: string;
     address?: Address;
-    designation?: string;
-    source?: string;
-    notes?: string;
+    type?: string;
+    vendorPercentage?: number;
+    categories?: string[];
+    services?: string[];
 }
 
-export interface CreateCustomerResponse {
+export interface CreateVendorResponse {
     success: boolean;
     message: string;
-    data: Customer;
+    data: Vendor;
 }
 
-interface CreateCustomerMutationPayload {
-    body: CreateCustomerRequestBody;
+interface CreateVendorMutationPayload {
+    body: CreateVendorRequestBody;
 }
 
 export const useCreateVendor = () => {
-    const mutation = useApiMutation<CreateCustomerResponse, CreateCustomerRequestBody>({
+    const mutation = useApiMutation<CreateVendorResponse, CreateVendorRequestBody>({
         method: 'POST',
-        endPoint: 'vendor',
+        endPoint: 'vendors',
     });
     const createVendor = useCallback(
-        ({ body }: CreateCustomerMutationPayload) => mutation.mutateAsync({ body }),
+        ({ body }: CreateVendorMutationPayload) => mutation.mutateAsync({ body }),
         [mutation],
     );
     return { ...mutation, createVendor };
@@ -105,27 +107,27 @@ export const useCreateVendor = () => {
 
 // ---------- PATCH /vendor/:id (update) ----------
 
-export type UpdateCustomerRequestBody = Partial<CreateCustomerRequestBody>;
+export type UpdateVendorRequestBody = Partial<CreateVendorRequestBody>;
 
-export interface UpdateCustomerResponse {
+export interface UpdateVendorResponse {
     success: boolean;
     message: string;
-    data: Customer;
+    data: Vendor;
 }
 
-interface UpdateCustomerMutationPayload {
+interface UpdateVendorMutationPayload {
     id: string;
-    body: UpdateCustomerRequestBody;
+    body: UpdateVendorRequestBody;
 }
 
 export const useUpdateVendor = () => {
-    const mutation = useApiMutation<UpdateCustomerResponse, UpdateCustomerRequestBody>({
+    const mutation = useApiMutation<UpdateVendorResponse, UpdateVendorRequestBody>({
         method: 'PATCH',
-        endPoint: 'vendor',
+        endPoint: 'vendors',
     });
     const updateVendor = useCallback(
-        ({ id, body }: UpdateCustomerMutationPayload) =>
-            mutation.mutateAsync({ endPoint: `vendor/${id}`, body }),
+        ({ id, body }: UpdateVendorMutationPayload) =>
+            mutation.mutateAsync({ endPoint: `vendors/${id}`, body }),
         [mutation],
     );
     return { ...mutation, updateVendor };
@@ -133,24 +135,24 @@ export const useUpdateVendor = () => {
 
 // ---------- DELETE /vendor/:id (delete) ----------
 
-export interface DeleteCustomerResponse {
+export interface DeleteVendorResponse {
     success: boolean;
     message: string;
 }
 
-interface DeleteCustomerMutationPayload {
+interface DeleteVendorMutationPayload {
     id: string;
 }
 
 export const useDeleteVendor = () => {
-    const mutation = useApiMutation<DeleteCustomerResponse>({
+    const mutation = useApiMutation<DeleteVendorResponse>({
         method: 'DELETE',
-        endPoint: '/vendor',
+        endPoint: 'vendors',
     });
 
     const deleteVendor = useCallback(
-        ({ id }: DeleteCustomerMutationPayload) =>
-            mutation.mutateAsync({ endPoint: `vendor/${id}` }),
+        ({ id }: DeleteVendorMutationPayload) =>
+            mutation.mutateAsync({ endPoint: `vendors/${id}` }),
         [mutation],
     );
 
