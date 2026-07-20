@@ -24,6 +24,12 @@ import VendorsFlatList from '../features/vendors/VendorsFlatList';
 import CreateVendor from '../features/vendors/CreateVendor';
 import EditVendor from '../features/vendors/EditVendor';
 import ChangePasswordScreen from '../features/auth/ChangePasswordScreen';
+import PurchaseOrdersFlatList from '../features/purchaseOrders/PurchaseOrdersFlatList';
+import SalesOrdersFlatList from '../features/salesOrders/SalesOrdersFlatList';
+import ItemsFlatList from '../features/items/ItemsFlatList';
+import CreatePurchaseOrder from '../features/purchaseOrders/CreatePurchaseOrder';
+import EditPurchaseOrder from '../features/purchaseOrders/EditPurchaseOrder';
+import PurchaseOrderDetailScreen from '../features/purchaseOrders/PurchaseOrderDetailScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -53,6 +59,12 @@ const MainStack: React.FC = () => {
           <Stack.Screen name='CreateVendor' component={CreateVendor}/>
           <Stack.Screen name='EditVendor' component={EditVendor}/>
           <Stack.Screen name="ChangePasswordScreen" component={ChangePasswordScreen} />
+          <Stack.Screen name="PurchaseOrdersFlatList" component={PurchaseOrdersFlatList} />
+          <Stack.Screen name="CreatePurchaseOrder" component={CreatePurchaseOrder} />
+          <Stack.Screen name="PurchaseOrderDetailScreen" component={PurchaseOrderDetailScreen} />
+          <Stack.Screen name="EditPurchaseOrder" component={EditPurchaseOrder} />
+          <Stack.Screen name="SalesOrdersFlatList" component={SalesOrdersFlatList} />
+          <Stack.Screen name="ItemsFlatList" component={ItemsFlatList} />
         </Stack.Navigator>
       </RolesProvider>
     </UsersProvider>

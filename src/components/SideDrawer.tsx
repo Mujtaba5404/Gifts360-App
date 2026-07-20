@@ -38,6 +38,9 @@ const MENU_ITEMS: MenuItem[] = [
   { label: 'Vendors', icon: 'cube-outline', route: 'Vendors' },
   { label: 'Expenses', icon: 'card-outline', route: 'ExpensesFlatList' },
   { label: 'Petty Cash', icon: 'cash-outline', route: 'PettyCash' },
+  { label: 'Purchase Orders', icon: 'wallet-outline', route: 'PurchaseOrdersFlatList' },
+  { label: 'Sale Orders', icon: 'receipt-outline', route: 'SalesOrdersFlatList' },
+  { label: 'Items', icon: 'receipt-outline', route: 'ItemsFlatList' },
 ];
 
 interface SideDrawerProps {

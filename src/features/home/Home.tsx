@@ -1,22 +1,20 @@
 import React, { useState } from 'react';
 import {
-  ImageBackground,
   ScrollView,
   StyleSheet,
   Text,
-  View,
+  View
 } from 'react-native';
 
 import { useSelector } from 'react-redux';
 import { fontFamily } from '../../assets/Fonts';
-import images from '../../assets/Images';
 import { SideDrawer, TopHeader } from '../../components';
+import PnlCard from '../../components/PnlCard';
 import { RootState } from '../../redux/store';
-import { getDisplayName } from '../../utils/user';
 import { height, width } from '../../utils';
 import { colors } from '../../utils/colors';
 import { fontSizes } from '../../utils/fontSizes';
-import PnlCard from '../../components/PnlCard';
+import { getDisplayName } from '../../utils/user';
 
 const Home = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -33,7 +31,6 @@ const Home = () => {
         notification
         onMenuPress={() => setDrawerOpen(true)}
       />
-
       <SideDrawer visible={drawerOpen} onClose={() => setDrawerOpen(false)} />
 
 

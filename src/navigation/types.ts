@@ -7,6 +7,7 @@ import { Expense } from '../api/useExpenses';
 import { Customer } from '../api/useCustomer';
 import { PettyCashRow } from '../features/pettyCash/types';
 import { Vendor } from '../features/vendors/types';
+import { PurchaseOrder } from '../api/usePurchaseOrders';
 
 export type RootStackParamList = {
   SignInEmail: undefined;
@@ -30,4 +31,10 @@ export type RootStackParamList = {
   Vendors: undefined;
   CreateVendor: undefined;
   EditVendor: { vendor: Vendor };
+  PurchaseOrdersFlatList: undefined;
+  CreatePurchaseOrder:undefined;
+  PurchaseOrderDetailScreen:undefined;
+  EditPurchaseOrder:{order: PurchaseOrder};
+  SalesOrdersFlatList: undefined;
+  ItemsFlatList: undefined;
 };
