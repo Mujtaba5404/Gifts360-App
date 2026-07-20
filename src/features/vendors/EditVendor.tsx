@@ -9,7 +9,7 @@ import { RootStackParamList } from '../../navigation/types';
 import { height, width } from '../../utils';
 import { colors } from '../../utils/colors';
 import { fontSizes } from '../../utils/fontSizes';
-import { useDeleteVendor, useUpdateVendor } from '../../api/useVendor';
+import { Address, useDeleteVendor, useUpdateVendor } from '../../api/useVendor';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 type EditVendorRouteProp = RouteProp<RootStackParamList, 'EditVendor'>;

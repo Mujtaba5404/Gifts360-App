@@ -1,3 +1,4 @@
+export { default as AddFab } from './AddFab';
 export { default as CustomButton } from './CustomButton';
 export { default as CustomTextInput } from './CustomTextInput';
 export { default as CustomPhoneInput } from './CustomPhoneInput';

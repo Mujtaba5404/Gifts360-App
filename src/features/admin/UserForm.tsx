@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -13,40 +14,86 @@ import { CustomButton, CustomTextInput } from '../../components';
 import { height, width } from '../../utils';
 import { colors } from '../../utils/colors';
 import { fontSizes } from '../../utils/fontSizes';
+import { DropdownOption } from '../orders/types';
 import { Checkbox, Dropdown, Field } from './formControls';
 
 export interface UserFormValues {
   name: string;
   email: string;
+  /** Edit mode mein khali chhoda ja sakta hai — matlab password badla nahi. */
   password: string;
   brands: string[];
   usesBrandAliases: boolean;
-  role: string;
+  roleId: string;
   isActive: boolean;
 }
 
 interface UserFormProps {
-  initialValues?: Partial<UserFormValues>;
   submitLabel: string;
+  submittingLabel?: string;
+
+  roleOptions: DropdownOption[];
+  brandOptions: string[];
+  isLoadingOptions?: boolean;
+
+  /** Edit mode mein record load hone ke baad pre-fill ke liye. */
+  initialValues?: Partial<UserFormValues>;
+  isLoadingInitial?: boolean;
+  hasLoadError?: boolean;
+  loadErrorText?: string;
+
+  /** Create par password lazmi hai, edit par optional. */
+  requirePassword?: boolean;
+  isPending?: boolean;
   onSubmit: (values: UserFormValues) => void;
 }
 
-// Placeholder option sets (replace with real data when the backend is wired).
-const BRAND_OPTIONS = ['Gifts360', 'Nike', 'Adidas', 'Zara', 'Puma'];
-const ROLE_OPTIONS = ['Admin', 'Manager', 'Editor', 'Viewer'];
 const MIN_PASSWORD_LENGTH = 6;
 
-const UserForm = ({ initialValues, submitLabel, onSubmit }: UserFormProps) => {
-  const [name, setName] = useState(initialValues?.name ?? '');
-  const [email, setEmail] = useState(initialValues?.email ?? '');
-  const [password, setPassword] = useState(initialValues?.password ?? '');
-  const [brands, setBrands] = useState<string[]>(initialValues?.brands ?? []);
-  const [usesBrandAliases, setUsesBrandAliases] = useState(
-    initialValues?.usesBrandAliases ?? false,
-  );
-  const [role, setRole] = useState(initialValues?.role ?? '');
-  const [isActive, setIsActive] = useState(initialValues?.isActive ?? true);
+const UserForm = ({
+  submitLabel,
+  submittingLabel = 'Saving...',
+  roleOptions,
+  brandOptions,
+  isLoadingOptions = false,
+  initialValues,
+  isLoadingInitial = false,
+  hasLoadError = false,
+  loadErrorText = 'Could not load this user.',
+  requirePassword = true,
+  isPending = false,
+  onSubmit,
+}: UserFormProps) => {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [brands, setBrands] = useState<string[]>([]);
+  const [usesBrandAliases, setUsesBrandAliases] = useState(false);
+  const [roleId, setRoleId] = useState('');
+  const [isActive, setIsActive] = useState(true);
   const [error, setError] = useState('');
+
+  // Edit mode: record aane ke baad form ko ek dafa pre-fill karna hai.
+  // NOTE: `false` se shuru hona zaroori hai — edit screen par pehle render mein
+  // initialValues undefined hoti hai (record load ho raha hota hai), to
+  // `!initialValues` flag ko true kar deta tha aur prefill kabhi chalta hi nahi tha.
+  const [isPrefilled, setIsPrefilled] = useState(false);
+
+  useEffect(() => {
+    if (!initialValues || isPrefilled) return;
+
+    setName(initialValues.name ?? '');
+    setEmail(initialValues.email ?? '');
+    setBrands(initialValues.brands ?? []);
+    setUsesBrandAliases(!!initialValues.usesBrandAliases);
+    setRoleId(initialValues.roleId ?? '');
+    setIsActive(initialValues.isActive ?? true);
+
+    setIsPrefilled(true);
+  }, [initialValues, isPrefilled]);
+
+  const selectedRoleLabel =
+    roleOptions.find(option => option.value === roleId)?.label ?? '';
 
   const handleSubmit = () => {
     const trimmedName = name.trim();
@@ -58,28 +105,48 @@ const UserForm = ({ initialValues, submitLabel, onSubmit }: UserFormProps) => {
     if (!trimmedEmail.includes('@')) {
       return setError('A valid email is required.');
     }
-    if (password.length < MIN_PASSWORD_LENGTH) {
-      return setError(
-        `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`,
-      );
+    // Edit mode: khali password ka matlab "badalna nahi hai".
+    if (requirePassword || password.length > 0) {
+      if (password.length < MIN_PASSWORD_LENGTH) {
+        return setError(
+          `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`,
+        );
+      }
     }
     if (brands.length === 0) {
       return setError('Please select at least one brand.');
     }
-    if (!role) {
+    if (!roleId) {
       return setError('Please select a role.');
     }
 
+    setError('');
     onSubmit({
       name: trimmedName,
       email: trimmedEmail,
       password,
       brands,
       usesBrandAliases,
-      role,
+      roleId,
       isActive,
     });
   };
+
+  if (isLoadingInitial) {
+    return (
+      <View style={styles.centerFill}>
+        <ActivityIndicator size="large" color={colors.mantineBlue} />
+      </View>
+    );
+  }
+
+  if (hasLoadError) {
+    return (
+      <View style={styles.centerFill}>
+        <Text style={styles.loadErrorText}>{loadErrorText}</Text>
+      </View>
+    );
+  }
 
   return (
     <KeyboardAvoidingView
@@ -114,9 +181,11 @@ const UserForm = ({ initialValues, submitLabel, onSubmit }: UserFormProps) => {
           />
         </Field>
 
-        <Field label="Password" required>
+        <Field label="Password" required={requirePassword}>
           <CustomTextInput
-            placeholder="Enter password"
+            placeholder={
+              requirePassword ? 'Enter password' : 'Leave blank to keep current'
+            }
             placeholderTextColor={colors.gray}
             inputHeight={height * 0.06}
             isPassword
@@ -127,8 +196,10 @@ const UserForm = ({ initialValues, submitLabel, onSubmit }: UserFormProps) => {
 
         <Field label="Brands" required>
           <Dropdown
-            placeholder="Select brands"
-            options={BRAND_OPTIONS}
+            placeholder={
+              isLoadingOptions ? 'Loading brands...' : 'Select brands'
+            }
+            options={brandOptions}
             selected={brands}
             multiple
             onChange={setBrands}
@@ -143,10 +214,14 @@ const UserForm = ({ initialValues, submitLabel, onSubmit }: UserFormProps) => {
 
         <Field label="Role" required>
           <Dropdown
-            placeholder="Select role"
-            options={ROLE_OPTIONS}
-            selected={role ? [role] : []}
-            onChange={values => setRole(values[0] ?? '')}
+            placeholder={isLoadingOptions ? 'Loading roles...' : 'Select role'}
+            options={roleOptions.map(option => option.label)}
+            selected={selectedRoleLabel ? [selectedRoleLabel] : []}
+            onChange={values => {
+              const label = values[0];
+              const match = roleOptions.find(option => option.label === label);
+              setRoleId(match?.value ?? '');
+            }}
           />
         </Field>
 
@@ -163,12 +238,13 @@ const UserForm = ({ initialValues, submitLabel, onSubmit }: UserFormProps) => {
         {error.length > 0 && <Text style={styles.errorText}>{error}</Text>}
 
         <CustomButton
-          text={submitLabel}
+          text={isPending ? submittingLabel : submitLabel}
           btnHeight={height * 0.065}
           btnWidth={width * 0.9}
           backgroundColor={colors.mantineBlue}
           textColor={colors.white}
           borderRadius={12}
+          disabled={isPending}
           onPress={handleSubmit}
         />
       </ScrollView>
@@ -179,6 +255,18 @@ const UserForm = ({ initialValues, submitLabel, onSubmit }: UserFormProps) => {
 const styles = StyleSheet.create({
   flex: {
     flex: 1,
+  },
+  centerFill: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: width * 0.1,
+  },
+  loadErrorText: {
+    textAlign: 'center',
+    color: colors.gray,
+    fontSize: fontSizes.sm2,
+    fontFamily: fontFamily.UrbanistMedium,
   },
   content: {
     paddingHorizontal: width * 0.05,

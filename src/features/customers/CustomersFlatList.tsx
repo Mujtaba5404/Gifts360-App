@@ -12,66 +12,21 @@ import {
   View,
 } from 'react-native';
 import { fontFamily } from '../../assets/Fonts';
-import { CustomButton, TopHeader } from '../../components';
+import { AddFab, CustomButton, TopHeader } from '../../components';
 import { RootStackParamList } from '../../navigation/types';
 import { height, width } from '../../utils';
 import { colors } from '../../utils/colors';
+import {
+  formatAddress,
+  getAvatarColor,
+  getInitials,
+  pickText,
+} from '../../utils/display';
 import { fontSizes } from '../../utils/fontSizes';
 import { Customer, useCustomers } from '../../api/useCustomer';
 import capitalizeLetters from '../../utils/capitalizeLetters';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
-
-const AVATAR_COLORS = [
-  '#4263EB',
-  '#1b342e',
-  '#E8590C',
-  '#0C8599',
-  '#6741D9',
-  '#C2255C',
-  '#2B8A3E',
-  '#9C36B5',
-];
-
-const pickText = (value: unknown): string => {
-  if (value == null) return '';
-  if (typeof value === 'string') return value;
-  if (typeof value === 'object') {
-    const obj = value as Record<string, unknown>;
-    const label = obj.title ?? obj.value ?? obj.name;
-    return typeof label === 'string' ? label : '';
-  }
-  return String(value);
-};
-
-const formatAddress = (customer: Customer) => {
-  const { address } = customer;
-  if (!address) return '';
-  return [
-    address.line1,
-    address.line2,
-    address.city,
-    address.state,
-    address.country,
-  ]
-    .filter(Boolean)
-    .join(', ');
-};
-
-const getInitials = (name: string) => {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return '?';
-  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
-  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
-};
-
-const getAvatarColor = (id: string) => {
-  let hash = 0;
-  for (let i = 0; i < id.length; i++) {
-    hash = id.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
-};
 
 const CustomersFlatList = () => {
   const navigation = useNavigation<Nav>();
@@ -95,7 +50,7 @@ const CustomersFlatList = () => {
         customer.phone,
         pickText(customer.designation),
         pickText(customer.source),
-        formatAddress(customer),
+        formatAddress(customer.address),
       ]
         .filter(Boolean)
         .join(' ')
@@ -105,14 +60,16 @@ const CustomersFlatList = () => {
   }, [customers, query]);
 
   const renderItem = ({ item }: { item: Customer }) => {
-    const address = formatAddress(item);
+    const address = formatAddress(item.address);
     const subtitle = pickText(item.company) || pickText(item.designation);
 
     return (
       <TouchableOpacity
         style={styles.card}
         activeOpacity={0.6}
-        onPress={() => navigation.navigate('EditCustomer', { customer: item })}
+        onPress={() =>
+          navigation.navigate('CustomerDetailScreen', { customerId: item._id })
+        }
       >
         <View
           style={[styles.avatar, { backgroundColor: getAvatarColor(item._id) }]}
@@ -274,20 +231,12 @@ const CustomersFlatList = () => {
         {renderList()}
       </View>
 
-      <TouchableOpacity
-        style={styles.fab}
-        activeOpacity={0.85}
+      <AddFab
+        label="Add Customer"
         onPress={() => navigation.navigate('CreateCustomer')}
-      >
-        <View style={styles.fabIcon}>
-          <Ionicons
-            name="add"
-            size={width * 0.055}
-            color={colors.mantineBlue}
-          />
-        </View>
-        <Text style={styles.fabText}>Add Customer</Text>
-      </TouchableOpacity>
+        bottom={height * 0.035}
+        fabWidth={width * 0.4}
+      />
     </View>
   );
 };
@@ -341,39 +290,6 @@ const styles = StyleSheet.create({
     marginTop: height * 0.025,
     paddingBottom: height * 0.12,
     gap: height * 0.015,
-  },
-  fab: {
-    position: 'absolute',
-    right: width * 0.06,
-    bottom: height * 0.035,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: width * 0.02,
-    height: height * 0.062,
-    width: width * 0.4,
-    paddingLeft: width * 0.02,
-    paddingRight: width * 0.05,
-    borderRadius: height * 0.03,
-    backgroundColor: colors.mantineBlue,
-    shadowColor: colors.mantineBlue,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35,
-    shadowRadius: 10,
-    elevation: 8,
-  },
-  fabIcon: {
-    width: width * 0.09,
-    height: width * 0.09,
-    borderRadius: width * 0.045,
-    backgroundColor: colors.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  fabText: {
-    fontSize: fontSizes.sm,
-    fontFamily: fontFamily.UrbanistBold,
-    fontWeight: '700',
-    color: colors.white,
   },
   card: {
     flexDirection: 'row',

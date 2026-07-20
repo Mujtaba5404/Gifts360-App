@@ -202,7 +202,10 @@ instance.interceptors.response.use(
 
     if (__DEV__) {
       console.log('\n================ API RESPONSE ================');
-      console.log('URL:', response.config.baseURL + response.config.url);
+      console.log(
+        'URL:',
+        `${response.config.baseURL ?? ''}${response.config.url ?? ''}`,
+      );
       console.log('STATUS:', response.status);
       console.log('HEADERS:', response.headers);
       console.log('DATA:', response.data);

@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { MMKV } from 'react-native-mmkv';
+import { createMMKV } from 'react-native-mmkv';
 import type { Storage } from 'redux-persist';
 
 const LEGACY_PERSIST_ROOT_KEY = 'persist:root';
@@ -29,7 +29,8 @@ export const preparePersistStorage = async () => {
 
     let legacyState: string | undefined;
     try {
-      const legacyStorage = new MMKV();
+      // react-native-mmkv v4 mein `new MMKV()` nahi chalta — ab createMMKV() hai.
+      const legacyStorage = createMMKV();
       legacyState = legacyStorage.getString(LEGACY_PERSIST_ROOT_KEY);
     } catch (error) {
       return;

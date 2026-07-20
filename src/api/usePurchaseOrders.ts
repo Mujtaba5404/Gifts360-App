@@ -152,11 +152,11 @@ export interface CreatePurchaseOrderVariables {
 }
 
 export const useCreatePurchaseOrder = () => {
-  const { mutateAsync, isPending, isError, error } = useApiMutation <CreatePurchaseOrderResponse, CreatePurchaseOrderPayload >
-  ({
-    method: 'POST',
-    endPoint: '/purchaseOrders',
-  });
+  const { mutateAsync, isPending, isError, error } = useApiMutation<CreatePurchaseOrderResponse, CreatePurchaseOrderPayload>
+    ({
+      method: 'POST',
+      endPoint: '/purchaseOrders',
+    });
 
   const createPurchaseOrder = (body: CreatePurchaseOrderPayload) =>
     mutateAsync({ body });
@@ -183,14 +183,35 @@ export interface UpdatePurchaseOrderVariables {
 export const useUpdatePurchaseOrder = () => {
   const { mutateAsync, isPending, isError, error } = useApiMutation<
     UpdatePurchaseOrderResponse,
-    UpdatePurchaseOrderVariables
+    CreatePurchaseOrderPayload
   >({
     method: 'PATCH',
-    endPoint: '/purchaseOrders',
+    endPoint: 'purchaseOrders',
   });
 
+
   const updatePurchaseOrder = ({ id, ...body }: UpdatePurchaseOrderPayload) =>
-    mutateAsync({ id, body });
+    mutateAsync({ endPoint: `purchaseOrders/${id}`, body });
 
   return { updatePurchaseOrder, isPending, isError, error };
+};
+
+// ---------- DELETE /purchaseOrders/:id ----------
+
+export interface DeletePurchaseOrderResponse {
+  success: boolean;
+  message: string;
+}
+
+export const useDeletePurchaseOrder = () => {
+  const { mutateAsync, isPending, isError, error } =
+    useApiMutation<DeletePurchaseOrderResponse>({
+      method: 'DELETE',
+      endPoint: 'purchaseOrders',
+    });
+
+  const deletePurchaseOrder = ({ id }: { id: string }) =>
+    mutateAsync({ endPoint: `purchaseOrders/${id}` });
+
+  return { deletePurchaseOrder, isPending, isError, error };
 };

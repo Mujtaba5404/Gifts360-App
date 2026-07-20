@@ -1,16 +1,21 @@
-import { useNavigation } from '@react-navigation/native';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import Toast from 'react-native-toast-message';
 import { useCustomers } from '../../api/useCustomer';
-import { useCreateSalesOrder, useSalesOrders } from '../../api/useSalesOrders';
+import {
+  useSalesOrder,
+  useSalesOrders,
+  useUpdateSalesOrder,
+} from '../../api/useSalesOrders';
 import { RootStackParamList } from '../../navigation/types';
 import OrderForm from '../orders/OrderForm';
 import {
   DropdownOption,
   OrderFormExtraSelect,
   OrderFormValues,
+  OrderItemRow,
 } from '../orders/types';
 import {
   ORDER_STATUS_OPTIONS,
@@ -19,11 +24,21 @@ import {
 } from './options';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
+type EditSORoute = RouteProp<RootStackParamList, 'EditSalesOrder'>;
 
-const CreateSalesOrder = () => {
+const EditSalesOrder = () => {
   const navigation = useNavigation<Nav>();
+  const route = useRoute<EditSORoute>();
   const queryClient = useQueryClient();
-  const { createSalesOrder, isPending } = useCreateSalesOrder();
+
+  const orderId = route.params?.orderId;
+
+  const { updateSalesOrder, isPending } = useUpdateSalesOrder();
+  const {
+    data: salesOrderData,
+    isLoading: isLoadingOrder,
+    isError: isOrderError,
+  } = useSalesOrder(orderId);
 
   const { data: customersData, isLoading: isLoadingCustomers } = useCustomers({
     page: 1,
@@ -79,9 +94,48 @@ const CreateSalesOrder = () => {
     ];
   }, [ordersData, isLoadingOrders]);
 
+  // API kabhi record ko `data` ke andar bhejta hai, kabhi top level par.
+  const initialValues = useMemo(() => {
+    if (!salesOrderData) return undefined;
+
+    const so: any = (salesOrderData as any).data ?? (salesOrderData as any);
+
+    const rows: OrderItemRow[] = (so.items ?? []).map((line: any) => ({
+      item: line.item,
+      quantity: String(line.quantity ?? '1'),
+      // OrderForm har jagah `unitCost` field use karta hai — sales order mein
+      // wahi value unitPrice kehlati hai.
+      unitCost: String(line.unitPrice ?? '0'),
+    }));
+
+    return {
+      partyId: so.customer?._id ?? so.customer ?? '',
+      rows,
+      discountAmount: String(so.discountAmount ?? '0'),
+      taxAmount: String(so.taxAmount ?? '0'),
+      serviceOrDeliveryFee: String(so.serviceOrDeliveryFee ?? '0'),
+      orderDate: so.orderDate ? new Date(so.orderDate) : new Date(),
+      paymentStatus: so.paymentStatus ?? 'pending',
+      paymentDate: so.paymentDate ? new Date(so.paymentDate) : undefined,
+      notes: so.notes ?? '',
+      extras: {
+        orderStatus: so.orderStatus ?? 'pending',
+        paymentMode: so.paymentMode?._id ?? so.paymentMode ?? '',
+        occasion: so.occasion?._id ?? so.occasion ?? '',
+        salesPerson: so.salesPerson?._id ?? so.salesPerson ?? '',
+      },
+    };
+  }, [salesOrderData]);
+
   const onSubmit = async (values: OrderFormValues) => {
+    if (!orderId) {
+      Toast.show({ type: 'error', text1: 'Missing sales order id' });
+      return;
+    }
+
     try {
-      const response = await createSalesOrder({
+      const response = await updateSalesOrder({
+        id: orderId,
         customer: values.partyId,
         items: values.rows.map(row => ({
           item: row.item!._id,
@@ -102,18 +156,19 @@ const CreateSalesOrder = () => {
       });
 
       await queryClient.invalidateQueries({ queryKey: ['salesOrders'] });
+      await queryClient.invalidateQueries({ queryKey: ['salesOrder', orderId] });
 
       Toast.show({
         type: 'success',
         text1: 'Success',
-        text2: response?.message || 'Sales order created successfully',
+        text2: response?.message || 'Sales order updated successfully',
       });
 
       navigation.goBack();
     } catch (err: any) {
       Toast.show({
         type: 'error',
-        text1: 'Could not create sales order',
+        text1: 'Could not update sales order',
         text2: err?.message || 'Something went wrong. Please try again.',
       });
     }
@@ -121,9 +176,9 @@ const CreateSalesOrder = () => {
 
   return (
     <OrderForm
-      headerText="Add Sales Order"
-      submitText="Save Sales Order"
-      submittingText="Saving..."
+      headerText="Edit Sales Order"
+      submitText="Update Sales Order"
+      submittingText="Updating..."
       partyLabel="Customer"
       partyPlaceholder="Select customer"
       partyOptions={customerOptions}
@@ -133,11 +188,14 @@ const CreateSalesOrder = () => {
       showInvoiceSubmissionDate={false}
       showReceived={false}
       extraSelects={extraSelects}
-      initialValues={{ extras: { orderStatus: 'pending' } }}
+      initialValues={initialValues}
+      isLoadingInitial={isLoadingOrder || !initialValues}
+      hasLoadError={isOrderError}
+      loadErrorText="Could not load this sales order."
       isPending={isPending}
       onSubmit={onSubmit}
     />
   );
 };
 
-export default CreateSalesOrder;
+export default EditSalesOrder;

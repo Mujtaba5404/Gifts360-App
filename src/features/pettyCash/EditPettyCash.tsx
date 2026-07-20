@@ -36,7 +36,8 @@ const EditPettyCash = () => {
 
   const [date, setDate] = useState<Date>(parseIncomingDate(incomingEntry.date));
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [name, setName] = useState(incomingEntry.name ?? '');
+  // API par entry ka naam `user` object ke andar aata hai (top level par nahi).
+  const [name, setName] = useState(incomingEntry.user?.name ?? '');
   const [description, setDescription] = useState(incomingEntry.description ?? '');
 
   // account now stores just the id — the object is only used for display

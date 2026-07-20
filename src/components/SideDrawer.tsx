@@ -1,7 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@react-native-vector-icons/ionicons';
-import { useEffect, useRef, useState } from 'react';
+import { ComponentProps, useEffect, useRef, useState } from 'react';
 import {
   Animated,
   Modal,
@@ -24,10 +24,12 @@ import { fontSizes } from '../utils/fontSizes';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
+type IconName = ComponentProps<typeof Ionicons>['name'];
+
 type MenuItem = {
   label: string;
-  icon: keyof typeof Ionicons.glyphMap;
-  route?: string;
+  icon: IconName;
+  route?: keyof RootStackParamList;
 };
 
 const DRAWER_WIDTH = width * 0.75;
@@ -35,12 +37,13 @@ const DRAWER_WIDTH = width * 0.75;
 const MENU_ITEMS: MenuItem[] = [
   { label: 'Home', icon: 'home-outline'},
   { label: 'Customers', icon: 'people-outline', route: 'Customers' },
-  { label: 'Vendors', icon: 'cube-outline', route: 'Vendors' },
+  { label: 'Vendors', icon: 'business-outline', route: 'Vendors' },
   { label: 'Expenses', icon: 'card-outline', route: 'ExpensesFlatList' },
   { label: 'Petty Cash', icon: 'cash-outline', route: 'PettyCash' },
   { label: 'Purchase Orders', icon: 'wallet-outline', route: 'PurchaseOrdersFlatList' },
   { label: 'Sale Orders', icon: 'receipt-outline', route: 'SalesOrdersFlatList' },
-  { label: 'Items', icon: 'receipt-outline', route: 'ItemsFlatList' },
+  { label: 'Items', icon: 'cube-outline', route: 'ItemsFlatList' },
+  { label: 'Payrolls', icon: 'people-circle-outline', route: 'PayrollsFlatList' },
 ];
 
 interface SideDrawerProps {

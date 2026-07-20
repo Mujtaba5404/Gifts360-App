@@ -12,67 +12,22 @@ import {
   View,
 } from 'react-native';
 import { fontFamily } from '../../assets/Fonts';
-import { CustomButton, TopHeader } from '../../components';
+import { AddFab, CustomButton, TopHeader } from '../../components';
 import { RootStackParamList } from '../../navigation/types';
 import { height, width } from '../../utils';
 import { colors } from '../../utils/colors';
+import {
+  formatAddress,
+  getAvatarColor,
+  getInitials,
+  pickText,
+} from '../../utils/display';
 import { fontSizes } from '../../utils/fontSizes';
 import { Vendor, useVendors } from '../../api/useVendor';
 import capitalizeLetters from '../../utils/capitalizeLetters';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
-const AVATAR_COLORS = [
-  '#4263EB',
-  '#1b342e',
-  '#E8590C',
-  '#0C8599',
-  '#6741D9',
-  '#C2255C',
-  '#2B8A3E',
-  '#9C36B5',
-];
-
-const pickText = (value: unknown): string => {
-  if (value == null) return '';
-  if (typeof value === 'string') return value;
-  if (typeof value === 'object') {
-    const obj = value as Record<string, unknown>;
-    const label = obj.title ?? obj.name ?? obj.value;
-    return typeof label === 'string' ? label : '';
-  }
-  return String(value);
-};
-
-const formatAddress = (vendor: Vendor) => {
-  const { address } = vendor;
-  if (!address) return '';
-  return [
-    address.line1,
-    address.line2,
-    address.city,
-    address.state,
-    address.country,
-  ]
-    .filter(Boolean)
-    .map(part => capitalizeLetters(part))
-    .join(', ');
-};
-
-const getInitials = (name: string) => {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return '?';
-  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
-  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
-};
-
-const getAvatarColor = (id: string) => {
-  let hash = 0;
-  for (let i = 0; i < id.length; i++) {
-    hash = id.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
-};
 
 
 const SkeletonCard = () => {
@@ -130,7 +85,7 @@ const VendorsFlatList = () => {
         vendor.phone,
         vendor.secondaryPhone,
         pickText(vendor.type),
-        formatAddress(vendor),
+        formatAddress(vendor.address, { capitalize: true }),
       ]
         .filter(Boolean)
         .join(' ')
@@ -140,7 +95,7 @@ const VendorsFlatList = () => {
   }, [vendors, query]);
 
   const renderItem = ({ item }: { item: Vendor }) => {
-    const address = formatAddress(item);
+    const address = formatAddress(item.address, { capitalize: true });
     const subtitle = capitalizeLetters(pickText(item.type));
     const categoriesCount = item.categories?.length ?? 0;
     const servicesCount = item.services?.length ?? 0;
@@ -149,7 +104,9 @@ const VendorsFlatList = () => {
       <TouchableOpacity
         style={styles.card}
         activeOpacity={0.7}
-        onPress={() => navigation.navigate('EditVendor', { vendor: item })}
+        onPress={() =>
+          navigation.navigate('VendorDetailScreen', { vendorId: item._id })
+        }
       >
         <View style={styles.cardTopRow}>
           <View
@@ -346,16 +303,12 @@ const VendorsFlatList = () => {
         {renderList()}
       </View>
 
-      <TouchableOpacity
-        style={styles.fab}
-        activeOpacity={0.85}
+      <AddFab
+        label="Add Vendor"
         onPress={() => navigation.navigate('CreateVendor')}
-      >
-        <View style={styles.fabIcon}>
-          <Ionicons name="add" size={width * 0.055} color={colors.mantineBlue} />
-        </View>
-        <Text style={styles.fabText}>Add Vendor</Text>
-      </TouchableOpacity>
+        bottom={height * 0.035}
+        fabWidth={width * 0.4}
+      />
     </View>
   );
 };
@@ -436,39 +389,6 @@ const styles = StyleSheet.create({
     marginBottom: height * 0.012,
   },
   list: { paddingBottom: height * 0.12, gap: height * 0.015 },
-  fab: {
-    position: 'absolute',
-    right: width * 0.06,
-    bottom: height * 0.035,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: width * 0.02,
-    height: height * 0.062,
-    width: width * 0.4,
-    paddingLeft: width * 0.02,
-    paddingRight: width * 0.05,
-    borderRadius: height * 0.03,
-    backgroundColor: colors.mantineBlue,
-    shadowColor: colors.mantineBlue,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35,
-    shadowRadius: 10,
-    elevation: 8,
-  },
-  fabIcon: {
-    width: width * 0.09,
-    height: width * 0.09,
-    borderRadius: width * 0.045,
-    backgroundColor: colors.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  fabText: {
-    fontSize: fontSizes.sm,
-    fontFamily: fontFamily.UrbanistBold,
-    fontWeight: '700',
-    color: colors.white,
-  },
   card: {
     paddingVertical: height * 0.016,
     paddingHorizontal: width * 0.04,

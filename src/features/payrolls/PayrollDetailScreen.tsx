@@ -1,4 +1,4 @@
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@react-native-vector-icons/ionicons';
 import { useQueryClient } from '@tanstack/react-query';
@@ -13,51 +13,31 @@ import {
   View,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
-import {
-  SalesOrder,
-  useDeleteSalesOrder,
-  useSalesOrder,
-} from '../../api/useSalesOrders';
+import { Payroll, useDeletePayroll, usePayroll } from '../../api/usePayrolls';
 import { fontFamily } from '../../assets/Fonts';
 import { CustomButton, TopHeader } from '../../components';
 import { RootStackParamList } from '../../navigation/types';
 import { height, width } from '../../utils';
-import { colors } from '../../utils/colors';
-import { fontSizes } from '../../utils/fontSizes';
 import capitalizeLetters from '../../utils/capitalizeLetters';
+import { colors } from '../../utils/colors';
 import formatAmount from '../../utils/formatAmount';
 import formatDate from '../../utils/formatDate';
+import { fontSizes } from '../../utils/fontSizes';
+import { formatMonth } from './options';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
-
-type DetailRoute = RouteProp<
-  { SalesOrderDetail: { orderId: string } },
-  'SalesOrderDetail'
->;
+type DetailRoute = RouteProp<RootStackParamList, 'PayrollDetailScreen'>;
 
 const STATUS_META: Record<
-  SalesOrder['paymentStatus'],
+  Payroll['status'],
   { label: string; color: string; bg: string }
 > = {
-  pending: { label: 'Pending', color: '#B54708', bg: '#FFF4E5' },
-  confirmed: { label: 'Confirmed', color: '#0C8599', bg: '#E3F8FA' },
+  unpaid: { label: 'Unpaid', color: '#B54708', bg: '#FFF4E5' },
   paid: { label: 'Paid', color: '#2B8A3E', bg: '#E8F7EC' },
-  partial: { label: 'Partial', color: '#0C8599', bg: '#E3F8FA' },
-  overdue: { label: 'Overdue', color: '#C2255C', bg: '#FDECF1' },
 };
 
-const ORDER_STATUS_LABELS: Record<SalesOrder['orderStatus'], string> = {
-  pending: 'Pending',
-  confirmed: 'Confirmed',
-  processing: 'Processing',
-  delivered: 'Delivered',
-  cancelled: 'Cancelled',
-  returned: 'Returned',
-};
-
-/** Wahi red jo overdue badge use karta hai — screen ka palette ek jaisa rahe. */
+/** Wahi red jo baaki detail screens par hai — palette ek jaisa rahe. */
 const DANGER_COLOR = '#C2255C';
-/** Tints bhi status badges wale hi hain (overdue ka bg aur blue ka halka version). */
 const DANGER_TINT = '#FDECF1';
 const EDIT_TINT = '#EDF0FE';
 
@@ -76,27 +56,25 @@ const DetailRow = ({
   </View>
 );
 
-const SalesOrderDetailScreen = () => {
+const PayrollDetailScreen = () => {
   const navigation = useNavigation<Nav>();
   const route = useRoute<DetailRoute>();
   const queryClient = useQueryClient();
-  const { orderId } = route.params;
+  const { payrollId } = route.params;
 
   const { data, isLoading, isError, refetch, isRefetching } =
-    useSalesOrder(orderId);
-  const { deleteSalesOrder, isPending: isDeleting } = useDeleteSalesOrder();
+    usePayroll(payrollId);
+  const { deletePayroll, isPending: isDeleting } = useDeletePayroll();
 
   // API record ko kabhi `data` ke andar bhejta hai, kabhi top level par.
-  const order = ((data as any)?.data ?? data) as SalesOrder | undefined;
-  const items = order?.items ?? [];
-  const statusMeta = order ? STATUS_META[order.paymentStatus] : undefined;
+  const payroll = ((data as any)?.data ?? data) as Payroll | undefined;
 
-  const onEdit = () => navigation.navigate('EditSalesOrder', { orderId });
+  const onEdit = () => navigation.navigate('EditPayroll', { payrollId });
 
   const onDelete = () => {
     Alert.alert(
-      'Delete Sales Order',
-      'Are you sure you want to delete this sales order?',
+      'Delete Payroll',
+      'Are you sure you want to delete this payroll?',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -104,21 +82,21 @@ const SalesOrderDetailScreen = () => {
           style: 'destructive',
           onPress: async () => {
             try {
-              const res = await deleteSalesOrder({ id: orderId });
-              // List ko refresh karwao warna delete hua order wahin dikhta rahega.
-              await queryClient.invalidateQueries({ queryKey: ['salesOrders'] });
+              const res = await deletePayroll({ id: payrollId });
+              // List ko refresh karwao warna delete hua record wahin dikhta rahega.
+              await queryClient.invalidateQueries({ queryKey: ['payrolls'] });
 
               Toast.show({
                 type: 'success',
                 text1: 'Success',
-                text2: res?.message || 'Sales order deleted successfully',
+                text2: res?.message || 'Payroll deleted successfully',
               });
 
               navigation.goBack();
             } catch (err: any) {
               Toast.show({
                 type: 'error',
-                text1: 'Could not delete sales order',
+                text1: 'Could not delete payroll',
                 text2:
                   err?.message || 'Something went wrong. Please try again.',
               });
@@ -132,7 +110,7 @@ const SalesOrderDetailScreen = () => {
   if (isLoading) {
     return (
       <View style={styles.container}>
-        <TopHeader text="Sales Order" isBack />
+        <TopHeader text="Payroll" isBack />
         <View style={styles.centerFill}>
           <ActivityIndicator size="large" color={colors.mantineBlue} />
         </View>
@@ -140,19 +118,17 @@ const SalesOrderDetailScreen = () => {
     );
   }
 
-  if (isError || !order) {
+  if (isError || !payroll) {
     return (
       <View style={styles.container}>
-        <TopHeader text="Sales Order" isBack />
+        <TopHeader text="Payroll" isBack />
         <View style={styles.centerFill}>
           <Ionicons
             name="cloud-offline-outline"
             size={width * 0.14}
             color={colors.lightGray}
           />
-          <Text style={styles.errorText}>
-            Could not load this sales order.
-          </Text>
+          <Text style={styles.errorText}>Could not load this payroll.</Text>
           <CustomButton
             text="Retry"
             onPress={() => refetch()}
@@ -167,9 +143,12 @@ const SalesOrderDetailScreen = () => {
     );
   }
 
+  const statusMeta = STATUS_META[payroll.status] ?? STATUS_META.unpaid;
+  const employeeName = payroll.employee?.name ?? 'Unknown employee';
+
   return (
     <View style={styles.container}>
-      <TopHeader text={order.orderId} isBack />
+      <TopHeader text={capitalizeLetters(employeeName)} isBack />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -178,8 +157,7 @@ const SalesOrderDetailScreen = () => {
           <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
         }
       >
-
-        {/* Order profile — poore order ki pehchan aur ahem numbers ek nazar mein. */}
+        {/* Payroll profile — pehchan aur ahem numbers ek nazar mein. */}
         <View style={styles.profileCard}>
           <View style={styles.profileActions}>
             <TouchableOpacity
@@ -217,199 +195,145 @@ const SalesOrderDetailScreen = () => {
 
           <View style={styles.profileAvatar}>
             <Ionicons
-              name="document-text-outline"
+              name="person-outline"
               size={width * 0.1}
               color={colors.white}
             />
           </View>
 
-          <Text style={styles.profilePoNumber}>{order.orderId}</Text>
-          <Text style={styles.profileVendor} numberOfLines={1}>
-            {capitalizeLetters(order.customer?.title ?? 'Unknown customer')}
+          <Text style={styles.profileName} numberOfLines={2}>
+            {capitalizeLetters(employeeName)}
           </Text>
+          <Text style={styles.profileMonth}>{formatMonth(payroll.month)}</Text>
 
-          {statusMeta && (
-            <View
-              style={[
-                styles.statusBadge,
-                styles.profileBadge,
-                { backgroundColor: statusMeta.bg },
-              ]}
-            >
-              <Text style={[styles.statusBadgeText, { color: statusMeta.color }]}>
-                {statusMeta.label}
-              </Text>
-            </View>
-          )}
+          <View
+            style={[
+              styles.statusBadge,
+              styles.profileBadge,
+              { backgroundColor: statusMeta.bg },
+            ]}
+          >
+            <Text style={[styles.statusBadgeText, { color: statusMeta.color }]}>
+              {statusMeta.label}
+            </Text>
+          </View>
 
           <View style={styles.profileStats}>
             <View style={styles.profileStat}>
               <Text style={styles.profileStatValue}>
-                {formatAmount(order.grandTotal)}
+                {formatAmount(payroll.netPay)}
               </Text>
-              <Text style={styles.profileStatLabel}>Grand Total</Text>
-            </View>
-
-            <View style={styles.profileStatDivider} />
-
-            <View style={styles.profileStat}>
-              <Text style={styles.profileStatValue}>{items.length}</Text>
-              <Text style={styles.profileStatLabel}>
-                {items.length === 1 ? 'Item' : 'Items'}
-              </Text>
+              <Text style={styles.profileStatLabel}>Net Pay</Text>
             </View>
 
             <View style={styles.profileStatDivider} />
 
             <View style={styles.profileStat}>
               <Text style={styles.profileStatValue}>
-                {ORDER_STATUS_LABELS[order.orderStatus] ?? '-'}
+                {formatAmount(payroll.basicSalary)}
               </Text>
-              <Text style={styles.profileStatLabel}>Order Status</Text>
+              <Text style={styles.profileStatLabel}>Basic</Text>
+            </View>
+
+            <View style={styles.profileStatDivider} />
+
+            <View style={styles.profileStat}>
+              <Text style={styles.profileStatValue}>
+                {formatAmount(payroll.deductions)}
+              </Text>
+              <Text style={styles.profileStatLabel}>Deductions</Text>
             </View>
           </View>
         </View>
 
-
+        {/* Earnings breakdown */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Customer</Text>
-          <View style={styles.card}>
-            <DetailRow
-              label="Name"
-              value={capitalizeLetters(order.customer?.title ?? '-')}
-            />
-            <DetailRow label="Email" value={order.customer?.email || '-'} />
-            <DetailRow label="Phone" value={order.customer?.phone || '-'} />
-            <DetailRow
-              label="Address"
-              value={order.customer?.compiledAddress || '-'}
-              isLast
-            />
-          </View>
-        </View>
-
-        {/* Items */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Items ({items.length})</Text>
-
-          {items.map((row, index) => (
-            <View key={index} style={styles.itemCard}>
-              <View style={styles.flex1}>
-                <Text style={styles.itemTitle} numberOfLines={1}>
-                  {row.item?.title ?? row.title}
-                </Text>
-                {!!(row.item?.sku ?? row.sku) && (
-                  <Text style={styles.itemSku}>
-                    {row.item?.sku ?? row.sku}
-                  </Text>
-                )}
-                <Text style={styles.itemMeta}>
-                  {row.quantity} x {formatAmount(row.unitPrice)}
-                </Text>
-              </View>
-              <Text style={styles.itemLineTotal}>
-                {formatAmount(row.lineTotal)}
-              </Text>
-            </View>
-          ))}
-        </View>
-
-        {/* Totals */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Totals</Text>
+          <Text style={styles.sectionTitle}>Earnings</Text>
           <View style={styles.card}>
             <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>Subtotal</Text>
+              <Text style={styles.totalLabel}>Basic Salary</Text>
               <Text style={styles.totalValue}>
-                {formatAmount(order.subtotal)}
+                {formatAmount(payroll.basicSalary)}
               </Text>
             </View>
-            {order.discountAmount > 0 && (
-              <View style={styles.totalRow}>
-                <Text style={styles.totalLabel}>Discount</Text>
-                <Text style={styles.totalValue}>
-                  -{formatAmount(order.discountAmount)}
-                </Text>
-              </View>
-            )}
-            {order.taxAmount > 0 && (
-              <View style={styles.totalRow}>
-                <Text style={styles.totalLabel}>Tax</Text>
-                <Text style={styles.totalValue}>
-                  {formatAmount(order.taxAmount)}
-                </Text>
-              </View>
-            )}
-            {order.serviceOrDeliveryFee > 0 && (
-              <View style={styles.totalRow}>
-                <Text style={styles.totalLabel}>Service / Delivery Fee</Text>
-                <Text style={styles.totalValue}>
-                  {formatAmount(order.serviceOrDeliveryFee)}
-                </Text>
-              </View>
-            )}
-            <View style={styles.divider} />
             <View style={styles.totalRow}>
-              <Text style={[styles.totalLabel, styles.grandTotalLabel]}>
-                Grand Total
+              <Text style={styles.totalLabel}>Allowances</Text>
+              <Text style={styles.totalValue}>
+                {formatAmount(payroll.allowances)}
               </Text>
-              <Text style={[styles.totalValue, styles.grandTotalValue]}>
-                {formatAmount(order.grandTotal)}
+            </View>
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>Bonus</Text>
+              <Text style={styles.totalValue}>
+                {formatAmount(payroll.bonus)}
+              </Text>
+            </View>
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>Overtime</Text>
+              <Text style={styles.totalValue}>
+                {formatAmount(payroll.overtime)}
+              </Text>
+            </View>
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>Deductions</Text>
+              <Text style={styles.totalValue}>
+                -{formatAmount(payroll.deductions)}
+              </Text>
+            </View>
+
+            <View style={styles.divider} />
+
+            <View style={styles.totalRow}>
+              <Text style={[styles.totalLabel, styles.netPayLabel]}>
+                Net Pay
+              </Text>
+              <Text style={[styles.totalValue, styles.netPayValue]}>
+                {formatAmount(payroll.netPay)}
               </Text>
             </View>
           </View>
         </View>
 
-        {/* Payment info */}
+        {/* Payment */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Payment</Text>
           <View style={styles.card}>
-            <DetailRow label="Order Date" value={formatDate(order.orderDate)} />
-            <DetailRow
-              label="Order Status"
-              value={ORDER_STATUS_LABELS[order.orderStatus] ?? '-'}
-            />
-            <DetailRow label="Payment Status" value={statusMeta?.label ?? '-'} />
+            <DetailRow label="Status" value={statusMeta.label} />
             <DetailRow
               label="Payment Mode"
-              value={order.paymentMode?.title || '-'}
+              value={payroll.paymentMode?.title || '-'}
             />
             <DetailRow
               label="Payment Date"
-              value={order.paymentDate ? formatDate(order.paymentDate) : '-'}
+              value={payroll.paymentDate ? formatDate(payroll.paymentDate) : '-'}
               isLast
             />
           </View>
         </View>
 
-        {/* Receiving info */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Order Info</Text>
-          <View style={styles.card}>
-            <DetailRow label="Occasion" value={order.occasion?.title || '-'} />
-            <DetailRow
-              label="Sales Person"
-              value={order.salesPerson?.name || '-'}
-              isLast
-            />
+        {/* Notes */}
+        {!!payroll.notes && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Notes</Text>
+            <View style={styles.card}>
+              <Text style={styles.notesText}>{payroll.notes}</Text>
+            </View>
           </View>
-        </View>
+        )}
 
         {/* Meta */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Details</Text>
           <View style={styles.card}>
             <DetailRow
-              label="Created By"
-              value={order.createdBy?.name || '-'}
+              label="Employee Email"
+              value={payroll.employee?.email || '-'}
             />
-            <DetailRow
-              label="Created On"
-              value={formatDate(order.createdAt)}
-            />
+            <DetailRow label="Created By" value={payroll.createdBy?.name || '-'} />
+            <DetailRow label="Created On" value={formatDate(payroll.createdAt)} />
             <DetailRow
               label="Last Updated"
-              value={formatDate(order.updatedAt)}
+              value={formatDate(payroll.updatedAt)}
               isLast
             />
           </View>
@@ -442,17 +366,6 @@ const styles = StyleSheet.create({
     paddingTop: height * 0.02,
     paddingBottom: height * 0.05,
     gap: height * 0.022,
-  },
-  flex1: {
-    flex: 1,
-  },
-  card: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.cardBg,
-    borderRadius: 12,
-    padding: width * 0.04,
-    gap: height * 0.012,
   },
   profileCard: {
     alignItems: 'center',
@@ -492,14 +405,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  profilePoNumber: {
+  profileName: {
     marginTop: height * 0.015,
+    textAlign: 'center',
     fontSize: fontSizes.md,
     fontFamily: fontFamily.UrbanistBold,
     fontWeight: '700',
     color: colors.black,
   },
-  profileVendor: {
+  profileMonth: {
     marginTop: 2,
     fontSize: fontSizes.sm,
     fontFamily: fontFamily.UrbanistMedium,
@@ -559,40 +473,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: colors.black,
   },
-  itemCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: width * 0.03,
+  card: {
     borderWidth: 1,
     borderColor: colors.border,
+    backgroundColor: colors.cardBg,
     borderRadius: 12,
-    padding: width * 0.035,
-    marginTop: height * 0.01,
-  },
-  itemTitle: {
-    fontSize: fontSizes.sm,
-    fontFamily: fontFamily.UrbanistBold,
-    fontWeight: '600',
-    color: colors.black,
-  },
-  itemSku: {
-    fontSize: fontSizes.xs,
-    fontFamily: fontFamily.UrbanistMedium,
-    color: colors.gray,
-    marginTop: 2,
-  },
-  itemMeta: {
-    fontSize: fontSizes.xs,
-    fontFamily: fontFamily.UrbanistMedium,
-    color: colors.gray,
-    marginTop: 4,
-  },
-  itemLineTotal: {
-    fontSize: fontSizes.sm,
-    fontFamily: fontFamily.UrbanistBold,
-    fontWeight: '700',
-    color: colors.black,
+    padding: width * 0.04,
+    gap: height * 0.012,
   },
   totalRow: {
     flexDirection: 'row',
@@ -615,14 +502,20 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border,
     marginVertical: height * 0.006,
   },
-  grandTotalLabel: {
+  netPayLabel: {
     color: colors.black,
     fontFamily: fontFamily.UrbanistBold,
     fontWeight: '700',
   },
-  grandTotalValue: {
+  netPayValue: {
     color: colors.mantineBlue,
     fontSize: fontSizes.sm2,
+  },
+  notesText: {
+    fontSize: fontSizes.sm,
+    fontFamily: fontFamily.UrbanistMedium,
+    color: colors.black,
+    lineHeight: fontSizes.sm * 1.5,
   },
   detailRow: {
     flexDirection: 'row',
@@ -649,4 +542,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SalesOrderDetailScreen;
+export default PayrollDetailScreen;

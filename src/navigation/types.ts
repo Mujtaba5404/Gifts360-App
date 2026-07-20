@@ -3,11 +3,12 @@
  * Keep route types here so screens can import them without importing the
  * navigator components (avoids circular imports).
  */
+// Route params hamesha API ke asal types use karte hain — features/*/types.ts
+// wale purane shapes server ke response se match nahi karte the.
 import { Expense } from '../api/useExpenses';
 import { Customer } from '../api/useCustomer';
-import { PettyCashRow } from '../features/pettyCash/types';
-import { Vendor } from '../features/vendors/types';
-import { PurchaseOrder } from '../api/usePurchaseOrders';
+import { PettyCash } from '../api/usePettyCash';
+import { Vendor } from '../api/useVendor';
 
 export type RootStackParamList = {
   SignInEmail: undefined;
@@ -23,18 +24,30 @@ export type RootStackParamList = {
   EditExpenses: { expense: Expense };
   ExpensesFlatList: undefined;
   CreatePettyCash: undefined;
-  EditPettyCash: { entry: PettyCashRow };
+  EditPettyCash: { entry: PettyCash };
   PettyCash: undefined;
   Customers: undefined;
   CreateCustomer: undefined;
   EditCustomer: { customer: Customer };
+  CustomerDetailScreen: { customerId: string };
   Vendors: undefined;
   CreateVendor: undefined;
   EditVendor: { vendor: Vendor };
+  VendorDetailScreen: { vendorId: string };
   PurchaseOrdersFlatList: undefined;
-  CreatePurchaseOrder:undefined;
-  PurchaseOrderDetailScreen:undefined;
-  EditPurchaseOrder:{order: PurchaseOrder};
+  CreatePurchaseOrder: undefined;
+  PurchaseOrderDetailScreen: { orderId: string };
+  EditPurchaseOrder: { orderId: string };
   SalesOrdersFlatList: undefined;
+  CreateSalesOrder: undefined;
+  SalesOrderDetailScreen: { orderId: string };
+  EditSalesOrder: { orderId: string };
   ItemsFlatList: undefined;
+  CreateItem: undefined;
+  ItemDetailScreen: { itemId: string };
+  EditItem: { itemId: string };
+  PayrollsFlatList: undefined;
+  CreatePayroll: undefined;
+  PayrollDetailScreen: { payrollId: string };
+  EditPayroll: { payrollId: string };
 };

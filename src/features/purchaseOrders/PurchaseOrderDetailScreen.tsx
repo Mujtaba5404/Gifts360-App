@@ -1,15 +1,25 @@
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import {
+  useNavigation,
+  useRoute,
+  RouteProp,
+} from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@react-native-vector-icons/ionicons';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   ActivityIndicator,
+  Alert,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
+import Toast from 'react-native-toast-message';
 import {
   PurchaseOrder,
+  useDeletePurchaseOrder,
   usePurchaseOrder,
 } from '../../api/usePurchaseOrders';
 import { fontFamily } from '../../assets/Fonts';
@@ -39,6 +49,12 @@ const STATUS_META: Record<
   overdue: { label: 'Overdue', color: '#C2255C', bg: '#FDECF1' },
 };
 
+/** Wahi red jo overdue badge use karta hai — screen ka palette ek jaisa rahe. */
+const DANGER_COLOR = '#C2255C';
+/** Tints bhi status badges wale hi hain (overdue ka bg aur blue ka halka version). */
+const DANGER_TINT = '#FDECF1';
+const EDIT_TINT = '#EDF0FE';
+
 const DetailRow = ({
   label,
   value,
@@ -57,14 +73,56 @@ const DetailRow = ({
 const PurchaseOrderDetailScreen = () => {
   const navigation = useNavigation<Nav>();
   const route = useRoute<DetailRoute>();
+  const queryClient = useQueryClient();
   const { orderId } = route.params;
 
   const { data, isLoading, isError, refetch, isRefetching } =
     usePurchaseOrder(orderId);
-    console.log(orderId)
+  const { deletePurchaseOrder, isPending: isDeleting } =
+    useDeletePurchaseOrder();
 
   const order = data;
   const items = order?.items ?? [];
+
+  const onEdit = () => navigation.navigate('EditPurchaseOrder', { orderId });
+
+  const onDelete = () => {
+    Alert.alert(
+      'Delete Purchase Order',
+      'Are you sure you want to delete this purchase order?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const res = await deletePurchaseOrder({ id: orderId });
+              // List ko refresh karwao warna delete hua order wahin dikhta rahega.
+              await queryClient.invalidateQueries({
+                queryKey: ['purchaseOrders'],
+              });
+
+              Toast.show({
+                type: 'success',
+                text1: 'Success',
+                text2: res?.message || 'Purchase order deleted successfully',
+              });
+
+              navigation.goBack();
+            } catch (err: any) {
+              Toast.show({
+                type: 'error',
+                text1: 'Could not delete purchase order',
+                text2:
+                  err?.message || 'Something went wrong. Please try again.',
+              });
+            }
+          },
+        },
+      ],
+    );
+  };
   const statusMeta = order ? STATUS_META[order.paymentStatus] : undefined;
 
   if (isLoading) {
@@ -112,38 +170,103 @@ const PurchaseOrderDetailScreen = () => {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
-        onRefresh={refetch}
-        refreshing={isRefetching}
+        refreshControl={
+          <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
+        }
       >
 
-        <View style={styles.card}>
-          <View style={styles.headerRow}>
-            <View style={styles.poIcon}>
+        {/* Order profile — poore order ki pehchan aur ahem numbers ek nazar mein. */}
+        <View style={styles.profileCard}>
+          <View style={styles.profileActions}>
+            <TouchableOpacity
+              style={styles.actionButton}
+              activeOpacity={0.6}
+              onPress={onEdit}
+              disabled={isDeleting}
+              hitSlop={10}
+            >
               <Ionicons
-                name="document-text-outline"
-                size={width * 0.06}
+                name="pencil"
+                size={width * 0.036}
                 color={colors.mantineBlue}
               />
-            </View>
-            <View style={styles.flex1}>
-              <Text style={styles.poNumber}>{order.poNumber}</Text>
-              <Text style={styles.vendorName} numberOfLines={1}>
-                {capitalizeLetters(order.vendor?.title ?? 'Unknown vendor')}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.actionButton, styles.actionButtonDanger]}
+              activeOpacity={0.6}
+              onPress={onDelete}
+              disabled={isDeleting}
+              hitSlop={10}
+            >
+              {isDeleting ? (
+                <ActivityIndicator size="small" color={DANGER_COLOR} />
+              ) : (
+                <Ionicons
+                  name="trash"
+                  size={width * 0.036}
+                  color={DANGER_COLOR}
+                />
+              )}
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.profileAvatar}>
+            <Ionicons
+              name="document-text-outline"
+              size={width * 0.1}
+              color={colors.white}
+            />
+          </View>
+
+          <Text style={styles.profilePoNumber}>{order.poNumber}</Text>
+          <Text style={styles.profileVendor} numberOfLines={1}>
+            {capitalizeLetters(order.vendor?.title ?? 'Unknown vendor')}
+          </Text>
+
+          {statusMeta && (
+            <View
+              style={[
+                styles.statusBadge,
+                styles.profileBadge,
+                { backgroundColor: statusMeta.bg },
+              ]}
+            >
+              <Text style={[styles.statusBadgeText, { color: statusMeta.color }]}>
+                {statusMeta.label}
               </Text>
             </View>
-            {statusMeta && (
-              <View
-                style={[styles.statusBadge, { backgroundColor: statusMeta.bg }]}
-              >
-                <Text style={[styles.statusBadgeText, { color: statusMeta.color }]}>
-                  {statusMeta.label}
-                </Text>
-              </View>
-            )}
+          )}
+
+          <View style={styles.profileStats}>
+            <View style={styles.profileStat}>
+              <Text style={styles.profileStatValue}>
+                {formatAmount(order.grandTotal)}
+              </Text>
+              <Text style={styles.profileStatLabel}>Grand Total</Text>
+            </View>
+
+            <View style={styles.profileStatDivider} />
+
+            <View style={styles.profileStat}>
+              <Text style={styles.profileStatValue}>{items.length}</Text>
+              <Text style={styles.profileStatLabel}>
+                {items.length === 1 ? 'Item' : 'Items'}
+              </Text>
+            </View>
+
+            <View style={styles.profileStatDivider} />
+
+            <View style={styles.profileStat}>
+              <Text style={styles.profileStatValue}>
+                {formatDate(order.orderDate)}
+              </Text>
+              <Text style={styles.profileStatLabel}>Order Date</Text>
+            </View>
           </View>
         </View>
 
-        
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Vendor</Text>
           <View style={styles.card}>
@@ -331,30 +454,91 @@ const styles = StyleSheet.create({
     padding: width * 0.04,
     gap: height * 0.012,
   },
-  headerRow: {
-    flexDirection: 'row',
+  profileCard: {
     alignItems: 'center',
-    gap: width * 0.035,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.cardBg,
+    borderRadius: 16,
+    paddingHorizontal: width * 0.04,
+    paddingVertical: height * 0.025,
   },
-  poIcon: {
-    width: width * 0.11,
-    height: width * 0.11,
-    borderRadius: width * 0.06,
-    backgroundColor: colors.white,
+  // Absolute rakha hai taake avatar card ke beech mein hi rahe, neeche na khiske.
+  profileActions: {
+    position: 'absolute',
+    top: height * 0.014,
+    right: width * 0.035,
+    flexDirection: 'row',
+    gap: width * 0.02,
+    zIndex: 1,
+  },
+  // Halka tinted circle — outline border se zyada saaf lagta hai is chhote size par.
+  actionButton: {
+    width: width * 0.072,
+    height: width * 0.072,
+    borderRadius: width * 0.036,
+    backgroundColor: EDIT_TINT,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  poNumber: {
-    fontSize: fontSizes.sm2,
+  actionButtonDanger: {
+    backgroundColor: DANGER_TINT,
+  },
+  profileAvatar: {
+    width: width * 0.2,
+    height: width * 0.2,
+    borderRadius: width * 0.1,
+    backgroundColor: colors.mantineBlue,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profilePoNumber: {
+    marginTop: height * 0.015,
+    fontSize: fontSizes.md,
     fontFamily: fontFamily.UrbanistBold,
     fontWeight: '700',
     color: colors.black,
   },
-  vendorName: {
+  profileVendor: {
+    marginTop: 2,
+    fontSize: fontSizes.sm,
+    fontFamily: fontFamily.UrbanistMedium,
+    color: colors.gray,
+  },
+  profileBadge: {
+    marginTop: height * 0.014,
+  },
+  profileStats: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'stretch',
+    marginTop: height * 0.02,
+    paddingTop: height * 0.018,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  profileStat: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 2,
+  },
+  profileStatValue: {
+    fontSize: fontSizes.sm,
+    fontFamily: fontFamily.UrbanistBold,
+    fontWeight: '700',
+    color: colors.black,
+    textAlign: 'center',
+  },
+  profileStatLabel: {
     fontSize: fontSizes.xs,
     fontFamily: fontFamily.UrbanistMedium,
     color: colors.gray,
-    marginTop: 2,
+    textAlign: 'center',
+  },
+  profileStatDivider: {
+    width: 1,
+    height: height * 0.035,
+    backgroundColor: colors.border,
   },
   statusBadge: {
     paddingHorizontal: width * 0.03,

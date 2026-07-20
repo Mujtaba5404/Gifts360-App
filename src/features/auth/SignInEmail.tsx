@@ -61,7 +61,6 @@ const SignInEmail = ({ navigation }: Props) => {
       });
 
       const { accessToken, refreshToken, user } = extractAuthTokens(response);
-      console.log("Login Response:", response);
 
       if (!accessToken) {
         if (__DEV__) {

@@ -3,7 +3,7 @@ import {
   createBottomTabNavigator,
 } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@react-native-vector-icons/ionicons';
-import { ReactNode, useEffect, useRef } from 'react';
+import { ComponentProps, ReactNode, useEffect, useRef } from 'react';
 import { Animated, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AdminSettings from '../features/admin/AdminSettings';
@@ -19,7 +19,9 @@ const ICON_COLOR = colors.mantineBlue;
 
 const ICON_SIZE = 26;
 
-const TAB_ICONS: Record<string, { outline: string; filled: string }> = {
+type IconName = ComponentProps<typeof Ionicons>['name'];
+
+const TAB_ICONS: Record<string, { outline: IconName; filled: IconName }> = {
   Home: { outline: 'home-outline', filled: 'home' },
   AdminSettings: { outline: 'settings-outline', filled: 'settings' },
   Profile: { outline: 'person-outline', filled: 'person' },

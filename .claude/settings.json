@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(perl -0pi -e 's/hitSlop=\\\\{8\\\\}/hitSlop={10}/g' features/purchaseOrders/PurchaseOrderDetailScreen.tsx)",
+      "Bash(grep -rn \"endPoint: *['\\\\`\\\\\"]/*users\" --include=\"*.ts\" --include=\"*.tsx\" .)",
+      "Bash(curl -s -o /tmp/pr.txt -w \"status=%{http_code}\\\\n\" \"https://gifts360.crmutilitylive.com/api/v1/payrolls\")",
+      "Read(//tmp/**)",
+      "Bash(curl -s -o /tmp/it.txt -w \"status=%{http_code}\\\\n\" \"https://gifts360.crmutilitylive.com/api/v1/items\")",
+      "Bash(curl -s -o /tmp/fake.txt -w \"status=%{http_code}\\\\n\" \"https://gifts360.crmutilitylive.com/api/v1/notarealroute123\")",
+      "Bash(npx prettier *)",
+      "Bash(node -e ' *)",
+      "Bash(perl -0pi -e \"s/import \\\\{ getAvatarColor, getInitials, pickText \\\\} from '..\\\\/..\\\\/utils\\\\/display';/import {\\\\n  formatAddress,\\\\n  getAvatarColor,\\\\n  getInitials,\\\\n  pickText,\\\\n} from '..\\\\/..\\\\/utils\\\\/display';/\" features/customers/CustomersFlatList.tsx features/vendors/VendorsFlatList.tsx)",
+      "Bash(perl -0pi -e 's/formatAddress\\\\\\(customer\\\\\\)/formatAddress\\(customer.address\\)/g; s/formatAddress\\\\\\(item\\\\\\)/formatAddress\\(item.address\\)/g' features/customers/CustomersFlatList.tsx)",
+      "Bash(perl -0pi -e 's/formatAddress\\\\\\(vendor\\\\\\)/formatAddress\\(vendor.address\\)/g; s/formatAddress\\\\\\(item\\\\\\)/formatAddress\\(item.address\\)/g' features/vendors/VendorsFlatList.tsx)"
+    ]
+  }
+}

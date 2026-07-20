@@ -42,7 +42,6 @@ const CreatePettyCash = () => {
 
   // roleSlice se logged-in user nikal rahe hain (jo signIn ke waqt setUser se store hua tha)
   const user = useSelector((state: RootState) => state.role.user); // <-- adjust 'role' key if your rootReducer names it differently
-  console.log("Redux User:", user);
   const { data: pettyCashData, isLoading: isLoadingAccounts } = usePettyCash({
     page: 1,
     pageSize: 100,

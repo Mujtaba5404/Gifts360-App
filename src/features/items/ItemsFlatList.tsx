@@ -12,7 +12,7 @@ import {
   View,
 } from 'react-native';
 import { fontFamily } from '../../assets/Fonts';
-import { CustomButton, TopHeader } from '../../components';
+import { AddFab, CustomButton, TopHeader } from '../../components';
 import { RootStackParamList } from '../../navigation/types';
 import { height, width } from '../../utils';
 import { colors } from '../../utils/colors';
@@ -80,7 +80,7 @@ const ItemsFlatList = () => {
         style={styles.card}
         activeOpacity={0.6}
         onPress={() =>
-          (navigation as any).navigate('EditItem', { item })
+          navigation.navigate('ItemDetailScreen', { itemId: item._id })
         }
       >
         <View style={styles.cardTop}>
@@ -299,22 +299,12 @@ const ItemsFlatList = () => {
         {renderList()}
       </View>
 
-      <TouchableOpacity
-        style={styles.fab}
-        activeOpacity={0.85}
-        onPress={() =>
-          (navigation as any).navigate('CreateItem')
-        }
-      >
-        <View style={styles.fabIcon}>
-          <Ionicons
-            name="add"
-            size={width * 0.055}
-            color={colors.mantineBlue}
-          />
-        </View>
-        <Text style={styles.fabText}>Add Item</Text>
-      </TouchableOpacity>
+      <AddFab
+        label="Add Item"
+        onPress={() => navigation.navigate('CreateItem')}
+        bottom={height * 0.065}
+        fabWidth={width * 0.4}
+      />
     </View>
   );
 };
@@ -362,39 +352,6 @@ const styles = StyleSheet.create({
     marginTop: height * 0.025,
     paddingBottom: height * 0.12,
     gap: height * 0.015,
-  },
-  fab: {
-    position: 'absolute',
-    right: width * 0.06,
-    bottom: height * 0.065,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: width * 0.02,
-    height: height * 0.062,
-    width: width * 0.4,
-    paddingLeft: width * 0.02,
-    paddingRight: width * 0.05,
-    borderRadius: height * 0.03,
-    backgroundColor: colors.mantineBlue,
-    shadowColor: colors.mantineBlue,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35,
-    shadowRadius: 10,
-    elevation: 8,
-  },
-  fabIcon: {
-    width: width * 0.09,
-    height: width * 0.09,
-    borderRadius: width * 0.045,
-    backgroundColor: colors.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  fabText: {
-    fontSize: fontSizes.sm,
-    fontFamily: fontFamily.UrbanistBold,
-    fontWeight: '700',
-    color: colors.white,
   },
   card: {
     paddingVertical: height * 0.016,

@@ -1,4 +1,4 @@
-import { useApiQuery } from '../services';
+import { useApiMutation, useApiQuery } from '../services';
 
 export interface SalesOrderAddress {
   line1?: string;
@@ -120,8 +120,112 @@ export const useSalesOrders = (params?: GetSalesOrdersParams) => {
     ['salesOrders', params],
     {
       method: 'GET',
-      endPoint: '/salesOrders',
+      endPoint: 'salesOrders',
       requestConfig: { params },
     },
   );
+};
+
+// ---------- GET /salesOrders/:id (single) ----------
+
+export const useSalesOrder = (id?: string) => {
+  return useApiQuery<{ data: SalesOrder }>(
+    ['salesOrder', id],
+    {
+      method: 'GET',
+      endPoint: `salesOrders/${id}`,
+    },
+    { enabled: !!id },
+  );
+};
+
+// ---------- POST /salesOrders (create) ----------
+
+export interface CreateSalesOrderLineItemPayload {
+  item?: string;
+  quantity: number;
+  unitPrice: number;
+}
+
+export interface CreateSalesOrderPayload {
+  customer: string;
+  items: CreateSalesOrderLineItemPayload[];
+  discountAmount?: number;
+  taxAmount?: number;
+  serviceOrDeliveryFee?: number;
+  orderDate: string;
+  orderStatus?: SalesOrderStatus;
+  paymentStatus?: SalesOrderPaymentStatus;
+  /** Picklist / user references — sirf _id bheja jata hai. */
+  paymentMode?: string;
+  paymentDate?: string;
+  occasion?: string;
+  salesPerson?: string;
+  notes?: string;
+}
+
+export interface CreateSalesOrderResponse {
+  data: SalesOrder;
+  message?: string;
+}
+
+export const useCreateSalesOrder = () => {
+  const { mutateAsync, isPending, isError, error } = useApiMutation<
+    CreateSalesOrderResponse,
+    CreateSalesOrderPayload
+  >({
+    method: 'POST',
+    endPoint: 'salesOrders',
+  });
+
+  const createSalesOrder = (body: CreateSalesOrderPayload) =>
+    mutateAsync({ body });
+
+  return { createSalesOrder, isPending, isError, error };
+};
+
+// ---------- PATCH /salesOrders/:id (update) ----------
+
+export interface UpdateSalesOrderPayload extends CreateSalesOrderPayload {
+  id: string;
+}
+
+export interface UpdateSalesOrderResponse {
+  data: SalesOrder;
+  message?: string;
+}
+
+export const useUpdateSalesOrder = () => {
+  const { mutateAsync, isPending, isError, error } = useApiMutation<
+    UpdateSalesOrderResponse,
+    CreateSalesOrderPayload
+  >({
+    method: 'PATCH',
+    endPoint: 'salesOrders',
+  });
+
+  const updateSalesOrder = ({ id, ...body }: UpdateSalesOrderPayload) =>
+    mutateAsync({ endPoint: `salesOrders/${id}`, body });
+
+  return { updateSalesOrder, isPending, isError, error };
+};
+
+// ---------- DELETE /salesOrders/:id ----------
+
+export interface DeleteSalesOrderResponse {
+  success: boolean;
+  message: string;
+}
+
+export const useDeleteSalesOrder = () => {
+  const { mutateAsync, isPending, isError, error } =
+    useApiMutation<DeleteSalesOrderResponse>({
+      method: 'DELETE',
+      endPoint: 'salesOrders',
+    });
+
+  const deleteSalesOrder = ({ id }: { id: string }) =>
+    mutateAsync({ endPoint: `salesOrders/${id}` });
+
+  return { deleteSalesOrder, isPending, isError, error };
 };

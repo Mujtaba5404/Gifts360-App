@@ -11,84 +11,79 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import {
-  AppUser,
-  getUserName,
-  getUserRoleTitle,
-  useUsers,
-} from '../../api/useUsers';
+import { Payroll, usePayrolls } from '../../api/usePayrolls';
 import { fontFamily } from '../../assets/Fonts';
 import { AddFab, CustomButton, TopHeader } from '../../components';
 import { RootStackParamList } from '../../navigation/types';
 import { height, width } from '../../utils';
 import capitalizeLetters from '../../utils/capitalizeLetters';
 import { colors } from '../../utils/colors';
-import { getAvatarColor, getInitials } from '../../utils/display';
+import formatAmount from '../../utils/formatAmount';
 import { fontSizes } from '../../utils/fontSizes';
+import { formatMonth } from './options';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
-const STATUS_META = {
-  active: { label: 'Active', color: '#2B8A3E', bg: '#E8F7EC' },
-  inactive: { label: 'Inactive', color: '#B54708', bg: '#FFF4E5' },
+const STATUS_META: Record<
+  Payroll['status'],
+  { label: string; color: string; bg: string }
+> = {
+  unpaid: { label: 'Unpaid', color: '#B54708', bg: '#FFF4E5' },
+  paid: { label: 'Paid', color: '#2B8A3E', bg: '#E8F7EC' },
 };
 
 const PAGE_SIZE = 100;
 
-const Users = () => {
+const PayrollsFlatList = () => {
   const navigation = useNavigation<Nav>();
   const [query, setQuery] = useState('');
 
-  const { data, isLoading, isError, error, refetch, isRefetching } = useUsers({
-    page: 1,
-    pageSize: PAGE_SIZE,
-  });
+  const { data, isLoading, isError, error, refetch, isRefetching } =
+    usePayrolls({
+      page: 1,
+      pageSize: PAGE_SIZE,
+    });
 
-  const users = data?.data ?? [];
+  const payrolls = data?.data ?? [];
 
-  const filteredUsers = useMemo(() => {
+  const filteredPayrolls = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return users;
-    return users.filter(user => {
-      const haystack = [
-        getUserName(user),
-        user.email,
-        getUserRoleTitle(user.role),
-      ]
+    if (!q) return payrolls;
+    return payrolls.filter(row => {
+      const haystack = [row.employee?.name, formatMonth(row.month)]
         .filter(Boolean)
         .join(' ')
         .toLowerCase();
       return haystack.includes(q);
     });
-  }, [users, query]);
+  }, [payrolls, query]);
 
-  const renderItem = ({ item }: { item: AppUser }) => {
-    const statusMeta = item.isActive ? STATUS_META.active : STATUS_META.inactive;
-    const brandCount = item.brands?.length ?? 0;
-    const displayName = getUserName(item) || 'Unnamed user';
+  const renderItem = ({ item }: { item: Payroll }) => {
+    const statusMeta = STATUS_META[item.status] ?? STATUS_META.unpaid;
 
     return (
       <TouchableOpacity
         style={styles.card}
         activeOpacity={0.6}
-        onPress={() => navigation.navigate('EditUser', { userId: item._id })}
+        onPress={() =>
+          navigation.navigate('PayrollDetailScreen', { payrollId: item._id })
+        }
       >
         <View style={styles.cardTop}>
-          <View
-            style={[
-              styles.avatar,
-              { backgroundColor: getAvatarColor(item._id) },
-            ]}
-          >
-            <Text style={styles.avatarText}>{getInitials(displayName)}</Text>
+          <View style={styles.payrollIcon}>
+            <Ionicons
+              name="person-outline"
+              size={width * 0.055}
+              color={colors.mantineBlue}
+            />
           </View>
 
           <View style={styles.info}>
-            <Text style={styles.userName} numberOfLines={1}>
-              {capitalizeLetters(displayName)}
+            <Text style={styles.employeeName} numberOfLines={1}>
+              {capitalizeLetters(item.employee?.name ?? 'Unknown employee')}
             </Text>
-            <Text style={styles.userEmail} numberOfLines={1}>
-              {item.email}
+            <Text style={styles.month} numberOfLines={1}>
+              {formatMonth(item.month)}
             </Text>
           </View>
 
@@ -101,41 +96,31 @@ const Users = () => {
 
         <View style={styles.divider} />
 
-        <View style={styles.cardBottom}>
-          <View style={styles.metaRow}>
-            <Ionicons
-              name="shield-checkmark-outline"
-              size={width * 0.032}
-              color={colors.gray}
-            />
-            <Text style={styles.meta}>
-              {getUserRoleTitle(item.role) || 'No role'}
+        <View style={styles.statsStrip}>
+          <View style={styles.statBox}>
+            <Text style={styles.statLabel}>Basic</Text>
+            <Text style={styles.statValue}>
+              {formatAmount(item.basicSalary)}
             </Text>
           </View>
 
-          {brandCount > 0 && (
-            <View style={styles.metaRow}>
-              <Ionicons
-                name="pricetags-outline"
-                size={width * 0.032}
-                color={colors.gray}
-              />
-              <Text style={styles.meta}>
-                {brandCount} {brandCount === 1 ? 'brand' : 'brands'}
-              </Text>
-            </View>
-          )}
+          <View style={styles.statDivider} />
 
-          {item.usesBrandAliases && (
-            <View style={styles.metaRow}>
-              <Ionicons
-                name="swap-horizontal-outline"
-                size={width * 0.032}
-                color={colors.gray}
-              />
-              <Text style={styles.meta}>Aliases</Text>
-            </View>
-          )}
+          <View style={styles.statBox}>
+            <Text style={styles.statLabel}>Deductions</Text>
+            <Text style={styles.statValue}>
+              {formatAmount(item.deductions)}
+            </Text>
+          </View>
+
+          <View style={styles.statDivider} />
+
+          <View style={styles.statBox}>
+            <Text style={styles.statLabel}>Net Pay</Text>
+            <Text style={[styles.statValue, styles.netPayValue]}>
+              {formatAmount(item.netPay)}
+            </Text>
+          </View>
         </View>
       </TouchableOpacity>
     );
@@ -158,7 +143,7 @@ const Users = () => {
             size={width * 0.14}
             color={colors.lightGray}
           />
-          <Text style={styles.emptyText}>Failed to load users.</Text>
+          <Text style={styles.emptyText}>Failed to load payrolls.</Text>
           {/* Asal server message dikhao — warna status code debugging mein atak jati hai. */}
           {!!error?.message && (
             <Text style={styles.errorDetail}>{error.message}</Text>
@@ -176,20 +161,20 @@ const Users = () => {
       );
     }
 
-    if (users.length === 0) {
+    if (payrolls.length === 0) {
       return (
         <View style={styles.centerState}>
           <Ionicons
-            name="person-add-outline"
+            name="people-outline"
             size={width * 0.14}
             color={colors.lightGray}
           />
-          <Text style={styles.emptyText}>No users added yet.</Text>
+          <Text style={styles.emptyText}>No payrolls added yet.</Text>
         </View>
       );
     }
 
-    if (filteredUsers.length === 0) {
+    if (filteredPayrolls.length === 0) {
       return (
         <View style={styles.centerState}>
           <Ionicons
@@ -198,7 +183,7 @@ const Users = () => {
             color={colors.lightGray}
           />
           <Text style={styles.emptyText}>
-            No users match "{query.trim()}".
+            No payrolls match "{query.trim()}".
           </Text>
         </View>
       );
@@ -206,7 +191,7 @@ const Users = () => {
 
     return (
       <FlatList
-        data={filteredUsers}
+        data={filteredPayrolls}
         keyExtractor={item => item._id}
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
@@ -215,21 +200,27 @@ const Users = () => {
         refreshing={isRefetching}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
+        initialNumToRender={12}
+        maxToRenderPerBatch={12}
+        windowSize={9}
+        removeClippedSubviews
       />
     );
   };
 
+  const showSearch = !isLoading && !isError && payrolls.length > 0;
+
   return (
     <View style={styles.container}>
-      <TopHeader text="Users" isBack />
+      <TopHeader text="Payrolls" isBack />
 
       <View style={styles.content}>
-        {!isLoading && !isError && users.length > 0 && (
+        {showSearch && (
           <View style={styles.searchBar}>
             <Ionicons name="search" size={width * 0.045} color={colors.gray} />
             <TextInput
               style={styles.searchInput}
-              placeholder="Search name, email or role"
+              placeholder="Search employee or month"
               placeholderTextColor={colors.gray}
               value={query}
               onChangeText={setQuery}
@@ -253,10 +244,10 @@ const Users = () => {
       </View>
 
       <AddFab
-        label="Add User"
-        onPress={() => navigation.navigate('CreateUser')}
+        label="Add Payroll"
+        onPress={() => navigation.navigate('CreatePayroll')}
         bottom={height * 0.065}
-        fabWidth={width * 0.4}
+        fabWidth={width * 0.45}
       />
     </View>
   );
@@ -326,33 +317,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: width * 0.035,
   },
-  avatar: {
-    width: width * 0.11,
-    height: width * 0.11,
+  payrollIcon: {
+    width: width * 0.09,
+    height: width * 0.09,
     borderRadius: width * 0.055,
+    backgroundColor: colors.white,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  avatarText: {
-    color: colors.white,
-    fontSize: fontSizes.sm,
-    fontFamily: fontFamily.UrbanistBold,
-    fontWeight: '700',
   },
   info: {
     flex: 1,
   },
-  userName: {
+  employeeName: {
     fontSize: fontSizes.sm,
     fontFamily: fontFamily.UrbanistBold,
     fontWeight: '600',
     color: colors.black,
   },
-  userEmail: {
-    marginTop: 2,
+  month: {
     fontSize: fontSizes.xs,
     fontFamily: fontFamily.UrbanistMedium,
     color: colors.gray,
+    marginTop: 2,
   },
   statusBadge: {
     paddingHorizontal: width * 0.02,
@@ -369,22 +355,41 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border,
     marginVertical: height * 0.014,
   },
-  cardBottom: {
+  statsStrip: {
     flexDirection: 'row',
     alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: width * 0.045,
+    paddingVertical: height * 0.01,
+    paddingHorizontal: width * 0.03,
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: width * 0.012,
+  statBox: {
+    flex: 1,
+    alignItems: 'flex-start',
+    gap: 2,
   },
-  meta: {
+  statLabel: {
     fontSize: fontSizes.xs,
     fontFamily: fontFamily.UrbanistMedium,
     color: colors.gray,
   },
+  statValue: {
+    fontSize: fontSizes.sm,
+    fontFamily: fontFamily.UrbanistBold,
+    fontWeight: '700',
+    color: colors.black,
+  },
+  netPayValue: {
+    color: colors.mantineBlue,
+  },
+  statDivider: {
+    width: 1,
+    height: height * 0.03,
+    backgroundColor: colors.border,
+    marginHorizontal: width * 0.03,
+  },
 });
 
-export default Users;
+export default PayrollsFlatList;
