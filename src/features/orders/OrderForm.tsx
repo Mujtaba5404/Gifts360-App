@@ -49,11 +49,6 @@ const formatDisplayDate = (d?: Date) =>
       })
     : '';
 
-/**
- * Purchase Order aur Sales Order — dono ka form bilkul ek jaisa hai, sirf
- * party (vendor/customer), labels aur submit handler alag hain. Is liye ek hi
- * component teeno screens (Create PO / Edit PO / Create SO) chalata hai.
- */
 const OrderForm = ({
   headerText,
   submitText,
@@ -102,13 +97,7 @@ const OrderForm = ({
   const [itemPickerIndex, setItemPickerIndex] = useState<number | null>(null);
   const [datePickerFor, setDatePickerFor] = useState<OpenDatePicker>(null);
 
-  // Amount wale inputs ke liye: focus mein raw value, blur pe formatAmount() se formatted value
   const [focusedField, setFocusedField] = useState<string | null>(null);
-
-  // Edit mode: record aane ke baad form ko ek dafa pre-fill karna hai
-  // NOTE: `false` se shuru hona zaroori hai — edit screen par pehle render mein
-  // initialValues undefined hoti hai (record load ho raha hota hai), to
-  // `!initialValues` flag ko true kar deta tha aur prefill kabhi chalta hi nahi tha.
   const [isPrefilled, setIsPrefilled] = useState(false);
 
   useEffect(() => {
@@ -261,7 +250,6 @@ const OrderForm = ({
   const currentDropdownOptions =
     openDropdown === 'party' ? partyOptions : PAYMENT_STATUS_OPTIONS;
 
-  // Edit mode: jab tak record load ho raha hai, form ke bajaye loader dikhao
   if (isLoadingInitial) {
     return (
       <View style={styles.container}>
@@ -531,7 +519,6 @@ const OrderForm = ({
           </TouchableOpacity>
         </View>
 
-        {/* Extra dropdowns (sales order: order status, payment mode, occasion, sales person) */}
         {extraSelects.map(field => {
           const selectedLabel =
             field.options.find(o => o.value === extras[field.key])?.label ?? '';

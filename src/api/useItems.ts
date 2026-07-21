@@ -131,8 +131,6 @@ export const useUpdateItem = () => {
     endPoint: 'items',
   });
 
-  // Baaki hooks ki tarhan id endPoint mein jati hai — mutation variables mein
-  // `id` naam ka koi field support nahi hota.
   const updateItem = ({ id, ...body }: UpdateItemPayload) =>
     mutateAsync({ endPoint: `items/${id}`, body });
 

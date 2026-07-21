@@ -35,7 +35,6 @@ import { fontSizes } from '../../utils/fontSizes';
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 type DetailRoute = RouteProp<RootStackParamList, 'CustomerDetailScreen'>;
 
-/** Wahi red jo baaki detail screens par hai — palette ek jaisa rahe. */
 const DANGER_COLOR = '#C2255C';
 const DANGER_TINT = '#FDECF1';
 const EDIT_TINT = '#EDF0FE';
@@ -44,14 +43,22 @@ const DetailRow = ({
   label,
   value,
   isLast,
+  numberOfLines,
 }: {
   label: string;
   value: string;
   isLast?: boolean;
+  numberOfLines?: number;
 }) => (
   <View style={[styles.detailRow, !isLast && styles.detailRowBorder]}>
     <Text style={styles.detailLabel}>{label}</Text>
-    <Text style={styles.detailValue}>{value}</Text>
+     <Text
+      style={styles.detailValue}
+      numberOfLines={numberOfLines}
+      ellipsizeMode="tail"
+    >
+      {value}
+    </Text>
   </View>
 );
 
@@ -65,7 +72,6 @@ const CustomerDetailScreen = () => {
     useCustomer(customerId);
   const { deleteCustomer, isPending: isDeleting } = useDeleteCustomer();
 
-  // API record ko kabhi `data` ke andar bhejta hai, kabhi top level par.
   const customer = ((data as any)?.data ?? data) as Customer | undefined;
 
   const onEdit = () => {
@@ -85,7 +91,6 @@ const CustomerDetailScreen = () => {
           onPress: async () => {
             try {
               const res = await deleteCustomer({ id: customerId });
-              // List ko refresh karwao warna delete hua record wahin dikhta rahega.
               await queryClient.invalidateQueries({ queryKey: ['customers'] });
 
               Toast.show({
@@ -161,7 +166,7 @@ const CustomerDetailScreen = () => {
           <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
         }
       >
-        {/* Customer profile — pehchan ek nazar mein. */}
+
         <View style={styles.profileCard}>
           <View style={styles.profileActions}>
             <TouchableOpacity
@@ -239,12 +244,16 @@ const CustomerDetailScreen = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Address</Text>
           <View style={styles.card}>
-            <DetailRow label="Street" value={customer.address?.line1 || '-'} />
-            <DetailRow label="City" value={customer.address?.city || '-'} />
-            <DetailRow label="State" value={customer.address?.state || '-'} />
+            <DetailRow
+                label="Street"
+                value={capitalizeLetters(customer.address?.line1 || '-')}
+                numberOfLines={1}
+              />
+            <DetailRow label="City" value={capitalizeLetters(customer.address?.city || '-')} />
+            <DetailRow label="State" value={capitalizeLetters(customer.address?.state || '-')} />
             <DetailRow
               label="Country"
-              value={customer.address?.country || '-'}
+              value={capitalizeLetters(customer.address?.country || '-')}
               isLast
             />
           </View>
@@ -272,7 +281,12 @@ const CustomerDetailScreen = () => {
               label="Source"
               value={source ? capitalizeLetters(source) : '-'}
             />
-            <DetailRow label="Full Address" value={address || '-'} isLast />
+            <DetailRow
+              label="Full Address"
+              value={capitalizeLetters(address || '-')}
+              numberOfLines={2}
+              isLast
+            />
           </View>
         </View>
       </ScrollView>

@@ -34,32 +34,20 @@ import formatDate from '../../utils/formatDate';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
-type DetailRoute = RouteProp<
-  { PurchaseOrderDetail: { orderId: string } },
-  'PurchaseOrderDetail'
->;
+type DetailRoute = RouteProp<{ PurchaseOrderDetail: { orderId: string } }, 'PurchaseOrderDetail'>;
 
-const STATUS_META: Record<
-  PurchaseOrder['paymentStatus'],
-  { label: string; color: string; bg: string }
-> = {
+const STATUS_META: Record<PurchaseOrder['paymentStatus'],{ label: string; color: string; bg: string }> = {
   pending: { label: 'Pending', color: '#B54708', bg: '#FFF4E5' },
   paid: { label: 'Paid', color: '#2B8A3E', bg: '#E8F7EC' },
   partial: { label: 'Partial', color: '#0C8599', bg: '#E3F8FA' },
   overdue: { label: 'Overdue', color: '#C2255C', bg: '#FDECF1' },
 };
 
-/** Wahi red jo overdue badge use karta hai — screen ka palette ek jaisa rahe. */
 const DANGER_COLOR = '#C2255C';
-/** Tints bhi status badges wale hi hain (overdue ka bg aur blue ka halka version). */
 const DANGER_TINT = '#FDECF1';
 const EDIT_TINT = '#EDF0FE';
 
-const DetailRow = ({
-  label,
-  value,
-  isLast,
-}: {
+const DetailRow = ({label, value, isLast}: {
   label: string;
   value: string;
   isLast?: boolean;
@@ -98,7 +86,6 @@ const PurchaseOrderDetailScreen = () => {
           onPress: async () => {
             try {
               const res = await deletePurchaseOrder({ id: orderId });
-              // List ko refresh karwao warna delete hua order wahin dikhta rahega.
               await queryClient.invalidateQueries({
                 queryKey: ['purchaseOrders'],
               });
@@ -175,7 +162,6 @@ const PurchaseOrderDetailScreen = () => {
         }
       >
 
-        {/* Order profile — poore order ki pehchan aur ahem numbers ek nazar mein. */}
         <View style={styles.profileCard}>
           <View style={styles.profileActions}>
             <TouchableOpacity
@@ -266,7 +252,6 @@ const PurchaseOrderDetailScreen = () => {
           </View>
         </View>
 
-
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Vendor</Text>
           <View style={styles.card}>
@@ -275,16 +260,15 @@ const PurchaseOrderDetailScreen = () => {
               value={capitalizeLetters(order.vendor?.title ?? '-')}
             />
             <DetailRow label="Email" value={order.vendor?.email || '-'} />
-            <DetailRow label="Phone" value={order.vendor?.phone || '-'} />
+            <DetailRow label="Phone" value={(order.vendor?.phone || '-')} />
             <DetailRow
               label="Address"
-              value={order.vendor?.compiledAddress || '-'}
+              value={capitalizeLetters(order.vendor?.compiledAddress || '-')}
               isLast
             />
           </View>
         </View>
 
-        {/* Items */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Items ({items.length})</Text>
 
@@ -292,7 +276,7 @@ const PurchaseOrderDetailScreen = () => {
             <View key={index} style={styles.itemCard}>
               <View style={styles.flex1}>
                 <Text style={styles.itemTitle} numberOfLines={1}>
-                  {row.item?.title ?? row.title}
+                  {capitalizeLetters(row.item?.title ?? row.title)}
                 </Text>
                 {!!(row.item?.sku ?? row.sku) && (
                   <Text style={styles.itemSku}>
@@ -378,7 +362,6 @@ const PurchaseOrderDetailScreen = () => {
           </View>
         </View>
 
-        {/* Receiving info */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Receiving</Text>
           <View style={styles.card}>
@@ -401,7 +384,7 @@ const PurchaseOrderDetailScreen = () => {
           <View style={styles.card}>
             <DetailRow
               label="Created By"
-              value={order.createdBy?.name || '-'}
+              value={capitalizeLetters(order.createdBy?.name || '-')}
             />
             <DetailRow
               label="Created On"
@@ -463,7 +446,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: width * 0.04,
     paddingVertical: height * 0.025,
   },
-  // Absolute rakha hai taake avatar card ke beech mein hi rahe, neeche na khiske.
   profileActions: {
     position: 'absolute',
     top: height * 0.014,
@@ -472,7 +454,6 @@ const styles = StyleSheet.create({
     gap: width * 0.02,
     zIndex: 1,
   },
-  // Halka tinted circle — outline border se zyada saaf lagta hai is chhote size par.
   actionButton: {
     width: width * 0.072,
     height: width * 0.072,

@@ -30,15 +30,9 @@ import formatDate from '../../utils/formatDate';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
-type DetailRoute = RouteProp<
-  { SalesOrderDetail: { orderId: string } },
-  'SalesOrderDetail'
->;
+type DetailRoute = RouteProp<{ SalesOrderDetail: { orderId: string } },'SalesOrderDetail'>;
 
-const STATUS_META: Record<
-  SalesOrder['paymentStatus'],
-  { label: string; color: string; bg: string }
-> = {
+const STATUS_META: Record<SalesOrder['paymentStatus'],{ label: string; color: string; bg: string }> = {
   pending: { label: 'Pending', color: '#B54708', bg: '#FFF4E5' },
   confirmed: { label: 'Confirmed', color: '#0C8599', bg: '#E3F8FA' },
   paid: { label: 'Paid', color: '#2B8A3E', bg: '#E8F7EC' },
@@ -55,24 +49,19 @@ const ORDER_STATUS_LABELS: Record<SalesOrder['orderStatus'], string> = {
   returned: 'Returned',
 };
 
-/** Wahi red jo overdue badge use karta hai — screen ka palette ek jaisa rahe. */
 const DANGER_COLOR = '#C2255C';
-/** Tints bhi status badges wale hi hain (overdue ka bg aur blue ka halka version). */
 const DANGER_TINT = '#FDECF1';
 const EDIT_TINT = '#EDF0FE';
 
-const DetailRow = ({
-  label,
-  value,
-  isLast,
-}: {
+const DetailRow = ({label, value, isLast, numberOfLines}: {
   label: string;
   value: string;
   isLast?: boolean;
+  numberOfLines?: number;
 }) => (
   <View style={[styles.detailRow, !isLast && styles.detailRowBorder]}>
     <Text style={styles.detailLabel}>{label}</Text>
-    <Text style={styles.detailValue}>{value}</Text>
+     <Text style={styles.detailValue} numberOfLines={numberOfLines} ellipsizeMode="tail">{value}</Text>
   </View>
 );
 
@@ -82,11 +71,9 @@ const SalesOrderDetailScreen = () => {
   const queryClient = useQueryClient();
   const { orderId } = route.params;
 
-  const { data, isLoading, isError, refetch, isRefetching } =
-    useSalesOrder(orderId);
+  const { data, isLoading, isError, refetch, isRefetching } = useSalesOrder(orderId);
   const { deleteSalesOrder, isPending: isDeleting } = useDeleteSalesOrder();
 
-  // API record ko kabhi `data` ke andar bhejta hai, kabhi top level par.
   const order = ((data as any)?.data ?? data) as SalesOrder | undefined;
   const items = order?.items ?? [];
   const statusMeta = order ? STATUS_META[order.paymentStatus] : undefined;
@@ -105,7 +92,6 @@ const SalesOrderDetailScreen = () => {
           onPress: async () => {
             try {
               const res = await deleteSalesOrder({ id: orderId });
-              // List ko refresh karwao warna delete hua order wahin dikhta rahega.
               await queryClient.invalidateQueries({ queryKey: ['salesOrders'] });
 
               Toast.show({
@@ -178,8 +164,6 @@ const SalesOrderDetailScreen = () => {
           <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
         }
       >
-
-        {/* Order profile — poore order ki pehchan aur ahem numbers ek nazar mein. */}
         <View style={styles.profileCard}>
           <View style={styles.profileActions}>
             <TouchableOpacity
@@ -282,7 +266,8 @@ const SalesOrderDetailScreen = () => {
             <DetailRow label="Phone" value={order.customer?.phone || '-'} />
             <DetailRow
               label="Address"
-              value={order.customer?.compiledAddress || '-'}
+              value={capitalizeLetters(order.customer?.compiledAddress || '-')}
+              numberOfLines={1}
               isLast
             />
           </View>
@@ -296,7 +281,7 @@ const SalesOrderDetailScreen = () => {
             <View key={index} style={styles.itemCard}>
               <View style={styles.flex1}>
                 <Text style={styles.itemTitle} numberOfLines={1}>
-                  {row.item?.title ?? row.title}
+                  {capitalizeLetters(row.item?.title ?? row.title)}
                 </Text>
                 {!!(row.item?.sku ?? row.sku) && (
                   <Text style={styles.itemSku}>
@@ -386,10 +371,10 @@ const SalesOrderDetailScreen = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Order Info</Text>
           <View style={styles.card}>
-            <DetailRow label="Occasion" value={order.occasion?.title || '-'} />
+            <DetailRow label="Occasion" value={capitalizeLetters(order.occasion?.title || '-')} />
             <DetailRow
               label="Sales Person"
-              value={order.salesPerson?.name || '-'}
+              value={capitalizeLetters(order.salesPerson?.name || '-')}
               isLast
             />
           </View>
@@ -401,7 +386,7 @@ const SalesOrderDetailScreen = () => {
           <View style={styles.card}>
             <DetailRow
               label="Created By"
-              value={order.createdBy?.name || '-'}
+              value={capitalizeLetters(order.createdBy?.name || '-')}
             />
             <DetailRow
               label="Created On"

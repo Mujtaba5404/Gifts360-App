@@ -1,3 +1,4 @@
+// EditPayroll.tsx
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQueryClient } from '@tanstack/react-query';
@@ -24,7 +25,6 @@ const EditPayroll = () => {
     isError: isPayrollError,
   } = usePayroll(payrollId);
 
-  // API kabhi record ko `data` ke andar bhejta hai, kabhi top level par.
   const initialValues = useMemo(() => {
     if (!payrollData) return undefined;
 
@@ -33,14 +33,10 @@ const EditPayroll = () => {
     return {
       employeeId: row.employee?._id ?? row.employee ?? '',
       month: row.month ? new Date(row.month) : new Date(),
-      basicSalary: String(row.basicSalary ?? ''),
-      allowances: String(row.allowances ?? ''),
-      bonus: String(row.bonus ?? ''),
-      overtime: String(row.overtime ?? ''),
-      deductions: String(row.deductions ?? ''),
-      status: row.status ?? 'unpaid',
-      paymentModeId: row.paymentMode?._id ?? row.paymentMode ?? '',
-      paymentDate: row.paymentDate ? new Date(row.paymentDate) : undefined,
+      salary: String(row.salary ?? ''),
+      arrears: String(row.arrears ?? ''),
+      deduction: String(row.deduction ?? ''),
+      tax: String(row.tax ?? ''),
       notes: row.notes ?? '',
     };
   }, [payrollData]);
@@ -56,15 +52,11 @@ const EditPayroll = () => {
         id: payrollId,
         employee: values.employeeId,
         month: values.month.toISOString(),
-        basicSalary: Number(values.basicSalary) || 0,
-        allowances: Number(values.allowances) || 0,
-        bonus: Number(values.bonus) || 0,
-        overtime: Number(values.overtime) || 0,
-        deductions: Number(values.deductions) || 0,
-        netPay: values.netPay,
-        status: values.status as any,
-        paymentMode: values.paymentModeId || undefined,
-        paymentDate: values.paymentDate?.toISOString(),
+        salary: Number(values.salary) || 0,
+        arrears: Number(values.arrears) || 0,
+        deduction: Number(values.deduction) || 0,
+        tax: Number(values.tax) || 0,
+        netSalary: values.netSalary,
         notes: values.notes,
       });
 

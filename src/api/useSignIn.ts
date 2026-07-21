@@ -35,11 +35,6 @@ interface SignInMutationPayload {
   body: SignInRequestBody;
 }
 
-/**
- * Backend login response ka shape har jagah ek jaisa nahi hai (kabhi tokens
- * `data` ke andar aate hain, kabhi top level par, kabhi `tokens` ke andar).
- * Is liye pehla non-empty token jo mile wahi utha lete hain.
- */
 export const extractAuthTokens = (response?: SignInResponse) => {
   const data = response?.data;
 

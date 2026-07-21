@@ -1,3 +1,4 @@
+// CreatePayroll.tsx
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQueryClient } from '@tanstack/react-query';
@@ -18,15 +19,11 @@ const CreatePayroll = () => {
       const res = await createPayroll({
         employee: values.employeeId,
         month: values.month.toISOString(),
-        basicSalary: Number(values.basicSalary) || 0,
-        allowances: Number(values.allowances) || 0,
-        bonus: Number(values.bonus) || 0,
-        overtime: Number(values.overtime) || 0,
-        deductions: Number(values.deductions) || 0,
-        netPay: values.netPay,
-        status: values.status as any,
-        paymentMode: values.paymentModeId || undefined,
-        paymentDate: values.paymentDate?.toISOString(),
+        salary: Number(values.salary) || 0,
+        arrears: Number(values.arrears) || 0,
+        deduction: Number(values.deduction) || 0,
+        tax: Number(values.tax) || 0,
+        netSalary: values.netSalary,
         notes: values.notes,
       });
 

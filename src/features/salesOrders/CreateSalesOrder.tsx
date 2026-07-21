@@ -30,7 +30,6 @@ const CreateSalesOrder = () => {
     pageSize: 100,
   });
 
-  // paymentMode / occasion / salesPerson ke options mojooda orders se aate hain.
   const { data: ordersData, isLoading: isLoadingOrders } = useSalesOrders({
     page: 1,
     pageSize: 100,
@@ -129,7 +128,6 @@ const CreateSalesOrder = () => {
       partyOptions={customerOptions}
       isLoadingParty={isLoadingCustomers}
       unitLabel="Unit Price"
-      // Ye do fields sirf purchase order ka hissa hain.
       showInvoiceSubmissionDate={false}
       showReceived={false}
       extraSelects={extraSelects}

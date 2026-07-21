@@ -142,7 +142,6 @@ export const useDeleteExpense = () => {
 
   const deleteExpense = useCallback(
     ({ id }: DeleteExpenseMutationPayload) =>
-      // Base endPoint yahan expense ke _id ke saath override hota hai.
       mutation.mutateAsync({ endPoint: `/expenses/${id}` }),
     [mutation],
   );

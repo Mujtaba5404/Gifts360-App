@@ -45,7 +45,6 @@ const EditSalesOrder = () => {
     pageSize: 100,
   });
 
-  // paymentMode / occasion / salesPerson ke options mojooda orders se aate hain.
   const { data: ordersData, isLoading: isLoadingOrders } = useSalesOrders({
     page: 1,
     pageSize: 100,
@@ -94,7 +93,6 @@ const EditSalesOrder = () => {
     ];
   }, [ordersData, isLoadingOrders]);
 
-  // API kabhi record ko `data` ke andar bhejta hai, kabhi top level par.
   const initialValues = useMemo(() => {
     if (!salesOrderData) return undefined;
 
@@ -103,8 +101,6 @@ const EditSalesOrder = () => {
     const rows: OrderItemRow[] = (so.items ?? []).map((line: any) => ({
       item: line.item,
       quantity: String(line.quantity ?? '1'),
-      // OrderForm har jagah `unitCost` field use karta hai — sales order mein
-      // wahi value unitPrice kehlati hai.
       unitCost: String(line.unitPrice ?? '0'),
     }));
 
@@ -184,7 +180,6 @@ const EditSalesOrder = () => {
       partyOptions={customerOptions}
       isLoadingParty={isLoadingCustomers}
       unitLabel="Unit Price"
-      // Ye do fields sirf purchase order ka hissa hain.
       showInvoiceSubmissionDate={false}
       showReceived={false}
       extraSelects={extraSelects}

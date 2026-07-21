@@ -72,11 +72,6 @@ const UserForm = ({
   const [roleId, setRoleId] = useState('');
   const [isActive, setIsActive] = useState(true);
   const [error, setError] = useState('');
-
-  // Edit mode: record aane ke baad form ko ek dafa pre-fill karna hai.
-  // NOTE: `false` se shuru hona zaroori hai — edit screen par pehle render mein
-  // initialValues undefined hoti hai (record load ho raha hota hai), to
-  // `!initialValues` flag ko true kar deta tha aur prefill kabhi chalta hi nahi tha.
   const [isPrefilled, setIsPrefilled] = useState(false);
 
   useEffect(() => {
@@ -105,7 +100,6 @@ const UserForm = ({
     if (!trimmedEmail.includes('@')) {
       return setError('A valid email is required.');
     }
-    // Edit mode: khali password ka matlab "badalna nahi hai".
     if (requirePassword || password.length > 0) {
       if (password.length < MIN_PASSWORD_LENGTH) {
         return setError(
@@ -193,24 +187,6 @@ const UserForm = ({
             onChangeText={setPassword}
           />
         </Field>
-
-        <Field label="Brands" required>
-          <Dropdown
-            placeholder={
-              isLoadingOptions ? 'Loading brands...' : 'Select brands'
-            }
-            options={brandOptions}
-            selected={brands}
-            multiple
-            onChange={setBrands}
-          />
-        </Field>
-
-        <Checkbox
-          label="Uses Brand Aliases"
-          checked={usesBrandAliases}
-          onToggle={() => setUsesBrandAliases(prev => !prev)}
-        />
 
         <Field label="Role" required>
           <Dropdown

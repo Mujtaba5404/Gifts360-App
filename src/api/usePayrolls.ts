@@ -18,7 +18,6 @@ export type PayrollStatus = 'paid' | 'unpaid';
 export interface Payroll {
   _id: string;
   employee?: PayrollEmployee;
-  /** Kis maheene ki payroll hai (backend ISO date bhejta hai). */
   month: string;
   basicSalary: number;
   allowances: number;
@@ -82,7 +81,6 @@ export const usePayroll = (id?: string) => {
 // ---------- POST /payrolls (create) ----------
 
 export interface CreatePayrollPayload {
-  /** Picklist / user references — sirf _id bheja jata hai. */
   employee?: string;
   month: string;
   basicSalary?: number;
@@ -136,8 +134,6 @@ export const useUpdatePayroll = () => {
     endPoint: 'payrolls',
   });
 
-  // Baaki hooks ki tarhan id endPoint mein jati hai — mutation variables mein
-  // `id` naam ka koi field support nahi hota.
   const updatePayroll = ({ id, ...body }: UpdatePayrollPayload) =>
     mutateAsync({ endPoint: `payrolls/${id}`, body });
 

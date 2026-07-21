@@ -24,17 +24,14 @@ import formatAmount from '../../utils/formatAmount';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
-const STATUS_META: Record<
-  PurchaseOrder['paymentStatus'],
-  { label: string; color: string; bg: string }
-> = {
+const STATUS_META: Record<PurchaseOrder['paymentStatus'],{ label: string; color: string; bg: string }> = {
   pending: { label: 'Pending', color: '#B54708', bg: '#FFF4E5' },
   paid: { label: 'Paid', color: '#2B8A3E', bg: '#E8F7EC' },
   partial: { label: 'Partial', color: '#0C8599', bg: '#E3F8FA' },
   overdue: { label: 'Overdue', color: '#C2255C', bg: '#FDECF1' },
 };
 
-const INITIAL_PAGE_SIZE = 50;
+const INITIAL_PAGE_SIZE = 500;
 
 const PurchaseOrdersFlatList = () => {
   const navigation = useNavigation<Nav>();
@@ -261,7 +258,8 @@ const PurchaseOrdersFlatList = () => {
       </View>
 
       <AddFab
-        label="Add Purchase Order"
+        label="Add"
+        subtitle="Purchase Order"
         onPress={() => navigation.navigate('CreatePurchaseOrder')}
         bottom={height * 0.065}
         fabWidth={width * 0.4}

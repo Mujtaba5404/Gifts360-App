@@ -300,7 +300,8 @@ const ItemsFlatList = () => {
       </View>
 
       <AddFab
-        label="Add Item"
+        label="Add"
+        subtitle="Items Order"
         onPress={() => navigation.navigate('CreateItem')}
         bottom={height * 0.065}
         fabWidth={width * 0.4}

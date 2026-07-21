@@ -27,9 +27,8 @@ import { fontSizes } from '../../utils/fontSizes';
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 type DetailRoute = RouteProp<RootStackParamList, 'ItemDetailScreen'>;
 
-/** Wahi red jo out-of-stock badge use karta hai — screen ka palette ek jaisa rahe. */
+
 const DANGER_COLOR = '#C2255C';
-/** Tints bhi status badges wale hi hain (red ka bg aur blue ka halka version). */
 const DANGER_TINT = '#FDECF1';
 const EDIT_TINT = '#EDF0FE';
 
@@ -87,7 +86,6 @@ const ItemDetailScreen = () => {
         onPress: async () => {
           try {
             const res = await deleteItem({ id: itemId });
-            // List ko refresh karwao warna delete hua item wahin dikhta rahega.
             await queryClient.invalidateQueries({ queryKey: ['items'] });
 
             Toast.show({
@@ -159,7 +157,6 @@ const ItemDetailScreen = () => {
           <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
         }
       >
-        {/* Item profile — pehchan aur ahem numbers ek nazar mein. */}
         <View style={styles.profileCard}>
           <View style={styles.profileActions}>
             <TouchableOpacity
@@ -313,7 +310,7 @@ const ItemDetailScreen = () => {
               label="Perishable"
               value={item.isPerishable ? 'Yes' : 'No'}
             />
-            <DetailRow label="Created By" value={item.createdBy?.name || '-'} />
+            <DetailRow label="Created By" value={capitalizeLetters(item.createdBy?.name || '-')} />
             <DetailRow label="Created On" value={formatDate(item.createdAt)} />
             <DetailRow
               label="Last Updated"

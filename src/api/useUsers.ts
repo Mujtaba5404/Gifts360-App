@@ -5,11 +5,6 @@ export interface UserRole {
   title: string;
 }
 
-/**
- * Login response `username` bhejta hai, jabke populated user refs (pettyCash,
- * salesOrders) `name` bhejte hain — is liye dono optional rakhe hain aur
- * display ke liye `getUserName()` use karte hain.
- */
 export interface AppUser {
   _id: string;
   name?: string;
@@ -17,7 +12,6 @@ export interface AppUser {
   email: string;
   brands?: string[];
   usesBrandAliases?: boolean;
-  /** Kabhi plain id/string, kabhi populated object. */
   role?: UserRole | string;
   isActive?: boolean;
   createdAt?: string;
@@ -132,8 +126,6 @@ export const useUpdateUser = () => {
     endPoint: 'users',
   });
 
-  // Baaki hooks ki tarhan id endPoint mein jati hai — mutation variables mein
-  // `id` naam ka koi field support nahi hota.
   const updateUser = ({ id, ...body }: UpdateUserPayload) =>
     mutateAsync({ endPoint: `users/${id}`, body });
 

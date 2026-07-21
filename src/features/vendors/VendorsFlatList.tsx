@@ -28,8 +28,6 @@ import capitalizeLetters from '../../utils/capitalizeLetters';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
-
-
 const SkeletonCard = () => {
   const opacity = useRef(new Animated.Value(0.4)).current;
 
@@ -258,15 +256,11 @@ const VendorsFlatList = () => {
         windowSize={9}
         removeClippedSubviews
         ListHeaderComponent={
-          <View style={styles.statCard}>
-            <View>
-              <Text style={styles.statNumber}>{filteredVendors.length}</Text>
-              <Text style={styles.statLabel}>
-                {filteredVendors.length === 1 ? 'Vendor' : 'Vendors'}
-                {query.trim() ? ' found' : ' total'}
-              </Text>
-            </View>
-          </View>
+          <Text style={styles.countText}>
+            {filteredVendors.length}{' '}
+            {filteredVendors.length === 1 ? 'vendor' : 'vendors'}
+            {query.trim() ? ' found' : ''}
+          </Text>
         }
       />
     );
@@ -511,6 +505,13 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     backgroundColor: colors.border,
   },
+  countText: {
+  marginTop: height * 0.02,
+  marginBottom: height * 0.012,
+  color: colors.gray,
+  fontSize: fontSizes.sm,
+  fontFamily: fontFamily.UrbanistMedium,
+},
 });
 
 export default VendorsFlatList;

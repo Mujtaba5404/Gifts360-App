@@ -109,9 +109,6 @@ interface UpdatePettyCashMutationPayload {
 }
  
 export const useUpdatePettyCash = () => {
-  // NOTE: endPoint here is just a base config value — the real path is
-  // built per-call below, so it must match the casing your backend uses
-  // (camelCase, same as the GET/POST routes above).
   const mutation = useApiMutation<UpdatePettyCashResponse, UpdatePettyCashRequestBody>({
     method: 'PATCH',
     endPoint: '/pettyCash',

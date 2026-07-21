@@ -43,7 +43,6 @@ const EditPurchaseOrder = () => {
     [vendorsData],
   );
 
-  // API kabhi record ko `data` ke andar bhejta hai, kabhi top level par.
   const initialValues = useMemo(() => {
     if (!purchaseOrderData) return undefined;
 

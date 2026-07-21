@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 0.5,
-    backgroundColor: colors.gray,
+    backgroundColor: colors.border,
     marginVertical: height * 0.015,
     alignSelf: 'center',
     justifyContent: 'center',

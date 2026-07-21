@@ -1,5 +1,4 @@
-import { useCallback } from 'react';
-import { useApiMutation, useApiQuery } from '../services';
+import { useApiQuery } from '../services';
 
 export interface CostItem {
     _id: string;
@@ -29,13 +28,12 @@ export interface GetPnLParams {
 }
 
 // ---------- GET /pnl ----------
-
 export const usePnL = (params?: GetPnLParams) => {
     return useApiQuery<PnL>(
         ['pnl', params],
         {
             method: 'GET',
-            endPoint: 'pnl',
+            endPoint: 'pnl/summary',
             requestConfig: { params },
         },
     );

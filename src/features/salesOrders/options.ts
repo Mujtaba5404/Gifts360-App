@@ -5,7 +5,7 @@ import {
 } from '../../api/useSalesOrders';
 import { DropdownOption } from '../orders/types';
 
-/** Order status backend par enum hai, is liye yahin fix kar diya. */
+
 export const ORDER_STATUS_OPTIONS: DropdownOption[] = [
   { label: 'Pending', value: 'pending' },
   { label: 'Confirmed', value: 'confirmed' },
@@ -31,11 +31,7 @@ const dedupeById = <T extends { _id: string }>(list: T[]): T[] => {
   return [...byId.values()];
 };
 
-/**
- * paymentMode / occasion picklists aur salesPerson ka koi apna endpoint nahi
- * hai (waisa hi masla jaisa expenses mein hai), is liye options mojooda sales
- * orders ke populated objects se banaye jate hain — un par asli _id hota hai.
- */
+
 export const getPicklistOptions = (
   orders: SalesOrder[],
   field: 'paymentMode' | 'occasion',

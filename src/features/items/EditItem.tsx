@@ -10,7 +10,6 @@ import ItemForm, { ItemFormValues } from './ItemForm';
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 type EditItemRoute = RouteProp<RootStackParamList, 'EditItem'>;
 
-/** Khali string ko 0 maan lo — backend numbers expect karta hai. */
 const toNumber = (value: string) => {
   const parsed = Number(value.trim());
   return isNaN(parsed) ? 0 : parsed;
@@ -30,7 +29,6 @@ const EditItem = () => {
     isError: isItemError,
   } = useItem(itemId);
 
-  // API kabhi record ko `data` ke andar bhejta hai, kabhi top level par.
   const initialValues = useMemo(() => {
     if (!itemData) return undefined;
 

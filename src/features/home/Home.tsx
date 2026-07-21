@@ -19,7 +19,7 @@ import { getDisplayName } from '../../utils/user';
 const Home = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const user = useSelector((state: RootState) => state.role.user);
+  const user = useSelector((state: RootState) => state.role.user.name);
   const userEmail = useSelector((state: RootState) => state.role.userEmail);
   const displayName = getDisplayName(user, userEmail);
 
@@ -40,6 +40,7 @@ const Home = () => {
         </Text>
 
         <PnlCard />
+
 
         <View style={{ height: height * 0.08 }} />
       </ScrollView>

@@ -1,3 +1,4 @@
+// PayrollDetailScreen.tsx
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@react-native-vector-icons/ionicons';
@@ -28,15 +29,6 @@ import { formatMonth } from './options';
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 type DetailRoute = RouteProp<RootStackParamList, 'PayrollDetailScreen'>;
 
-const STATUS_META: Record<
-  Payroll['status'],
-  { label: string; color: string; bg: string }
-> = {
-  unpaid: { label: 'Unpaid', color: '#B54708', bg: '#FFF4E5' },
-  paid: { label: 'Paid', color: '#2B8A3E', bg: '#E8F7EC' },
-};
-
-/** Wahi red jo baaki detail screens par hai — palette ek jaisa rahe. */
 const DANGER_COLOR = '#C2255C';
 const DANGER_TINT = '#FDECF1';
 const EDIT_TINT = '#EDF0FE';
@@ -66,7 +58,6 @@ const PayrollDetailScreen = () => {
     usePayroll(payrollId);
   const { deletePayroll, isPending: isDeleting } = useDeletePayroll();
 
-  // API record ko kabhi `data` ke andar bhejta hai, kabhi top level par.
   const payroll = ((data as any)?.data ?? data) as Payroll | undefined;
 
   const onEdit = () => navigation.navigate('EditPayroll', { payrollId });
@@ -83,7 +74,6 @@ const PayrollDetailScreen = () => {
           onPress: async () => {
             try {
               const res = await deletePayroll({ id: payrollId });
-              // List ko refresh karwao warna delete hua record wahin dikhta rahega.
               await queryClient.invalidateQueries({ queryKey: ['payrolls'] });
 
               Toast.show({
@@ -143,8 +133,18 @@ const PayrollDetailScreen = () => {
     );
   }
 
-  const statusMeta = STATUS_META[payroll.status] ?? STATUS_META.unpaid;
-  const employeeName = payroll.employee?.name ?? 'Unknown employee';
+  const employeeName =
+    [payroll.employee?.personal?.firstName, payroll.employee?.personal?.lastName]
+      .filter(Boolean)
+      .join(' ') || 'Unknown employee';
+
+  const employeeEmail =
+    payroll.employee?.contact?.officialEmail ||
+    payroll.employee?.contact?.personalEmail ||
+    '-';
+
+  const department = payroll.employee?.organization?.department?.title;
+  const designation = payroll.employee?.organization?.designation?.title;
 
   return (
     <View style={styles.container}>
@@ -204,80 +204,65 @@ const PayrollDetailScreen = () => {
           <Text style={styles.profileName} numberOfLines={2}>
             {capitalizeLetters(employeeName)}
           </Text>
-          <Text style={styles.profileMonth}>{formatMonth(payroll.month)}</Text>
-
-          <View
-            style={[
-              styles.statusBadge,
-              styles.profileBadge,
-              { backgroundColor: statusMeta.bg },
-            ]}
-          >
-            <Text style={[styles.statusBadgeText, { color: statusMeta.color }]}>
-              {statusMeta.label}
-            </Text>
-          </View>
+          <Text style={styles.profileMonth}>
+            {formatMonth(payroll.month)}
+            {designation ? ` · ${capitalizeLetters(designation)}` : ''}
+          </Text>
 
           <View style={styles.profileStats}>
             <View style={styles.profileStat}>
               <Text style={styles.profileStatValue}>
-                {formatAmount(payroll.netPay)}
+                {formatAmount(payroll.netSalary)}
               </Text>
-              <Text style={styles.profileStatLabel}>Net Pay</Text>
+              <Text style={styles.profileStatLabel}>Net Salary</Text>
             </View>
 
             <View style={styles.profileStatDivider} />
 
             <View style={styles.profileStat}>
               <Text style={styles.profileStatValue}>
-                {formatAmount(payroll.basicSalary)}
+                {formatAmount(payroll.salary)}
               </Text>
-              <Text style={styles.profileStatLabel}>Basic</Text>
+              <Text style={styles.profileStatLabel}>Salary</Text>
             </View>
 
             <View style={styles.profileStatDivider} />
 
             <View style={styles.profileStat}>
               <Text style={styles.profileStatValue}>
-                {formatAmount(payroll.deductions)}
+                {formatAmount(payroll.deduction)}
               </Text>
-              <Text style={styles.profileStatLabel}>Deductions</Text>
+              <Text style={styles.profileStatLabel}>Deduction</Text>
             </View>
           </View>
         </View>
 
         {/* Earnings breakdown */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Earnings</Text>
+          <Text style={styles.sectionTitle}>Salary Breakdown</Text>
           <View style={styles.card}>
             <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>Basic Salary</Text>
+              <Text style={styles.totalLabel}>Salary</Text>
               <Text style={styles.totalValue}>
-                {formatAmount(payroll.basicSalary)}
+                {formatAmount(payroll.salary)}
               </Text>
             </View>
             <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>Allowances</Text>
+              <Text style={styles.totalLabel}>Arrears</Text>
               <Text style={styles.totalValue}>
-                {formatAmount(payroll.allowances)}
+                {formatAmount(payroll.arrears)}
               </Text>
             </View>
             <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>Bonus</Text>
+              <Text style={styles.totalLabel}>Deduction</Text>
               <Text style={styles.totalValue}>
-                {formatAmount(payroll.bonus)}
+                -{formatAmount(payroll.deduction)}
               </Text>
             </View>
             <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>Overtime</Text>
+              <Text style={styles.totalLabel}>Tax</Text>
               <Text style={styles.totalValue}>
-                {formatAmount(payroll.overtime)}
-              </Text>
-            </View>
-            <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>Deductions</Text>
-              <Text style={styles.totalValue}>
-                -{formatAmount(payroll.deductions)}
+                -{formatAmount(payroll.tax)}
               </Text>
             </View>
 
@@ -285,51 +270,42 @@ const PayrollDetailScreen = () => {
 
             <View style={styles.totalRow}>
               <Text style={[styles.totalLabel, styles.netPayLabel]}>
-                Net Pay
+                Net Salary
               </Text>
               <Text style={[styles.totalValue, styles.netPayValue]}>
-                {formatAmount(payroll.netPay)}
+                {formatAmount(payroll.netSalary)}
               </Text>
             </View>
           </View>
         </View>
 
-        {/* Payment */}
+        {/* Employee */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Payment</Text>
+          <Text style={styles.sectionTitle}>Employee</Text>
           <View style={styles.card}>
-            <DetailRow label="Status" value={statusMeta.label} />
             <DetailRow
-              label="Payment Mode"
-              value={payroll.paymentMode?.title || '-'}
+              label="Employee ID"
+              value={payroll.employee?.employeeId || '-'}
+            />
+            <DetailRow label="Email" value={employeeEmail} />
+            <DetailRow label="Phone" value={payroll.employee?.contact?.phone || '-'} />
+            <DetailRow
+              label="Department"
+              value={department ? capitalizeLetters(department) : '-'}
             />
             <DetailRow
-              label="Payment Date"
-              value={payroll.paymentDate ? formatDate(payroll.paymentDate) : '-'}
+              label="Designation"
+              value={designation ? capitalizeLetters(designation) : '-'}
               isLast
             />
           </View>
         </View>
 
-        {/* Notes */}
-        {!!payroll.notes && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Notes</Text>
-            <View style={styles.card}>
-              <Text style={styles.notesText}>{payroll.notes}</Text>
-            </View>
-          </View>
-        )}
-
         {/* Meta */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Details</Text>
           <View style={styles.card}>
-            <DetailRow
-              label="Employee Email"
-              value={payroll.employee?.email || '-'}
-            />
-            <DetailRow label="Created By" value={payroll.createdBy?.name || '-'} />
+            <DetailRow label="Month" value={formatMonth(payroll.month)} />
             <DetailRow label="Created On" value={formatDate(payroll.createdAt)} />
             <DetailRow
               label="Last Updated"
@@ -376,7 +352,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: width * 0.04,
     paddingVertical: height * 0.025,
   },
-  // Absolute rakha hai taake avatar card ke beech mein hi rahe, neeche na khiske.
   profileActions: {
     position: 'absolute',
     top: height * 0.014,
@@ -385,7 +360,6 @@ const styles = StyleSheet.create({
     gap: width * 0.02,
     zIndex: 1,
   },
-  // Halka tinted circle — outline border se zyada saaf lagta hai is chhote size par.
   actionButton: {
     width: width * 0.072,
     height: width * 0.072,
@@ -415,12 +389,10 @@ const styles = StyleSheet.create({
   },
   profileMonth: {
     marginTop: 2,
+    textAlign: 'center',
     fontSize: fontSizes.sm,
     fontFamily: fontFamily.UrbanistMedium,
     color: colors.gray,
-  },
-  profileBadge: {
-    marginTop: height * 0.014,
   },
   profileStats: {
     flexDirection: 'row',
@@ -453,16 +425,6 @@ const styles = StyleSheet.create({
     width: 1,
     height: height * 0.035,
     backgroundColor: colors.border,
-  },
-  statusBadge: {
-    paddingHorizontal: width * 0.03,
-    paddingVertical: height * 0.008,
-    borderRadius: 20,
-  },
-  statusBadgeText: {
-    fontSize: fontSizes.xs,
-    fontFamily: fontFamily.UrbanistBold,
-    fontWeight: '600',
   },
   section: {
     gap: height * 0.01,
@@ -510,12 +472,6 @@ const styles = StyleSheet.create({
   netPayValue: {
     color: colors.mantineBlue,
     fontSize: fontSizes.sm2,
-  },
-  notesText: {
-    fontSize: fontSizes.sm,
-    fontFamily: fontFamily.UrbanistMedium,
-    color: colors.black,
-    lineHeight: fontSizes.sm * 1.5,
   },
   detailRow: {
     flexDirection: 'row',

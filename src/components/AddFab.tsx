@@ -7,17 +7,15 @@ import { fontSizes } from '../utils/fontSizes';
 
 interface AddFabProps {
   label: string;
+  subtitle?: string;
   onPress: () => void;
-  /** Har list apni position rakhti hai, is liye override kiya ja sakta hai. */
   bottom?: number;
   fabWidth?: DimensionValue;
 }
 
-/**
- * Saari list screens par "Add ..." ka floating pill button.
- */
 const AddFab = ({
   label,
+  subtitle,
   onPress,
   bottom = height * 0.035,
   fabWidth,
@@ -30,7 +28,14 @@ const AddFab = ({
     <View style={styles.fabIcon}>
       <Ionicons name="add" size={width * 0.055} color={colors.mantineBlue} />
     </View>
-    <Text style={styles.fabText}>{label}</Text>
+    <View style={styles.textWrap}>
+      <Text style={styles.fabText}>{label}</Text>
+      {!!subtitle && (
+        <Text style={styles.fabSubtitle} numberOfLines={1}>
+          {subtitle}
+        </Text>
+      )}
+    </View>
   </TouchableOpacity>
 );
 
@@ -60,11 +65,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  textWrap: {
+    justifyContent: 'center',
+  },
   fabText: {
     fontSize: fontSizes.sm,
     fontFamily: fontFamily.UrbanistBold,
     fontWeight: '700',
     color: colors.white,
+    lineHeight: fontSizes.sm * 1.1,
+  },
+  fabSubtitle: {
+    fontSize: fontSizes.xs,
+    fontFamily: fontFamily.UrbanistMedium,
+    color: colors.white,
+    opacity: 0.85,
+    lineHeight: fontSizes.xs * 1.1,
   },
 });
 

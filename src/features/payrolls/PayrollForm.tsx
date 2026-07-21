@@ -1,3 +1,4 @@
+// PayrollForm.tsx
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from '@react-native-vector-icons/ionicons';
 import { useEffect, useMemo, useState } from 'react';
@@ -20,33 +21,20 @@ import { CustomButton, TopHeader } from '../../components';
 import { height, width } from '../../utils';
 import { colors } from '../../utils/colors';
 import formatAmount from '../../utils/formatAmount';
-import formatDate from '../../utils/formatDate';
 import { fontSizes } from '../../utils/fontSizes';
-import {
-  PAYROLL_STATUS_OPTIONS,
-  calculateNetPay,
-  formatMonth,
-  getEmployeeOptions,
-  getPaymentModeOptions,
-} from './options';
+import { calculateNetSalary, formatMonth, getEmployeeOptions } from './options';
 
-type OpenDropdown = 'employee' | 'status' | 'paymentMode' | null;
-type OpenDatePicker = 'month' | 'paymentDate' | null;
+type OpenDropdown = 'employee' | null;
+type OpenDatePicker = 'month' | null;
 
-/** Form ki poori state — submit par screen ko isi shape mein values milti hain. */
 export interface PayrollFormValues {
   employeeId: string;
   month: Date;
-  /** Numbers form mein string rehte hain; screen submit par Number() karti hai. */
-  basicSalary: string;
-  allowances: string;
-  bonus: string;
-  overtime: string;
-  deductions: string;
-  netPay: number;
-  status: string;
-  paymentModeId: string;
-  paymentDate?: Date;
+  salary: string;
+  arrears: string;
+  deduction: string;
+  tax: string;
+  netSalary: number;
   notes: string;
 }
 
@@ -54,8 +42,6 @@ export interface PayrollFormProps {
   headerText: string;
   submitText: string;
   submittingText: string;
-
-  /** Edit mode mein record load hone ke baad pre-fill ke liye. */
   initialValues?: Partial<PayrollFormValues>;
   isLoadingInitial?: boolean;
   hasLoadError?: boolean;
@@ -81,7 +67,7 @@ const PayrollForm: React.FC<PayrollFormProps> = ({
   isPending,
   onSubmit,
 }) => {
-  // Employee / paymentMode ke options mojooda payrolls se aate hain.
+  // Employee ke options mojooda payrolls se aate hain.
   const { data: payrollsData, isLoading: isLoadingOptions } = usePayrolls({
     page: 1,
     pageSize: 100,
@@ -92,30 +78,19 @@ const PayrollForm: React.FC<PayrollFormProps> = ({
     () => getEmployeeOptions(payrolls),
     [payrolls],
   );
-  const paymentModeOptions = useMemo(
-    () => getPaymentModeOptions(payrolls),
-    [payrolls],
-  );
 
   const [employeeId, setEmployeeId] = useState('');
   const [month, setMonth] = useState<Date>(new Date());
-  const [basicSalary, setBasicSalary] = useState('');
-  const [allowances, setAllowances] = useState('');
-  const [bonus, setBonus] = useState('');
-  const [overtime, setOvertime] = useState('');
-  const [deductions, setDeductions] = useState('');
-  const [status, setStatus] = useState('unpaid');
-  const [paymentModeId, setPaymentModeId] = useState('');
-  const [paymentDate, setPaymentDate] = useState<Date | undefined>();
+  const [salary, setSalary] = useState('');
+  const [arrears, setArrears] = useState('');
+  const [deduction, setDeduction] = useState('');
+  const [tax, setTax] = useState('');
   const [notes, setNotes] = useState('');
 
   const [openDropdown, setOpenDropdown] = useState<OpenDropdown>(null);
   const [datePickerFor, setDatePickerFor] = useState<OpenDatePicker>(null);
 
   // Edit mode: record aane ke baad form ko ek dafa pre-fill karna hai.
-  // NOTE: `false` se shuru hona zaroori hai — edit screen par pehle render mein
-  // initialValues undefined hoti hai (record load ho raha hota hai), to
-  // `!initialValues` flag ko true kar deta tha aur prefill kabhi chalta hi nahi tha.
   const [isPrefilled, setIsPrefilled] = useState(false);
 
   useEffect(() => {
@@ -123,67 +98,39 @@ const PayrollForm: React.FC<PayrollFormProps> = ({
 
     setEmployeeId(initialValues.employeeId ?? '');
     setMonth(initialValues.month ?? new Date());
-    setBasicSalary(initialValues.basicSalary ?? '');
-    setAllowances(initialValues.allowances ?? '');
-    setBonus(initialValues.bonus ?? '');
-    setOvertime(initialValues.overtime ?? '');
-    setDeductions(initialValues.deductions ?? '');
-    setStatus(initialValues.status ?? 'unpaid');
-    setPaymentModeId(initialValues.paymentModeId ?? '');
-    setPaymentDate(initialValues.paymentDate);
+    setSalary(initialValues.salary ?? '');
+    setArrears(initialValues.arrears ?? '');
+    setDeduction(initialValues.deduction ?? '');
+    setTax(initialValues.tax ?? '');
     setNotes(initialValues.notes ?? '');
 
     setIsPrefilled(true);
   }, [initialValues, isPrefilled]);
 
-  // Net pay derived hai — user isse type nahi karta.
-  const netPay = useMemo(
+  // Net salary derived hai — user isse type nahi karta.
+  const netSalary = useMemo(
     () =>
-      calculateNetPay({
-        basicSalary: toNumber(basicSalary),
-        allowances: toNumber(allowances),
-        bonus: toNumber(bonus),
-        overtime: toNumber(overtime),
-        deductions: toNumber(deductions),
+      calculateNetSalary({
+        salary: toNumber(salary),
+        arrears: toNumber(arrears),
+        deduction: toNumber(deduction),
+        tax: toNumber(tax),
       }),
-    [basicSalary, allowances, bonus, overtime, deductions],
+    [salary, arrears, deduction, tax],
   );
 
   const selectedEmployeeLabel =
     employeeOptions.find(option => option.value === employeeId)?.label ?? '';
-  const selectedStatusLabel =
-    PAYROLL_STATUS_OPTIONS.find(option => option.value === status)?.label ?? '';
-  const selectedPaymentModeLabel =
-    paymentModeOptions.find(option => option.value === paymentModeId)?.label ??
-    '';
-
-  const dropdownOptions =
-    openDropdown === 'employee'
-      ? employeeOptions
-      : openDropdown === 'status'
-      ? PAYROLL_STATUS_OPTIONS
-      : paymentModeOptions;
-
-  const selectedDropdownValue =
-    openDropdown === 'employee'
-      ? employeeId
-      : openDropdown === 'status'
-      ? status
-      : paymentModeId;
 
   const onSelectDropdown = (value: string) => {
     if (openDropdown === 'employee') setEmployeeId(value);
-    if (openDropdown === 'status') setStatus(value);
-    if (openDropdown === 'paymentMode') setPaymentModeId(value);
     setOpenDropdown(null);
   };
 
   const onDateChange = (_event: any, selected?: Date) => {
-    const field = datePickerFor;
-    setDatePickerFor(Platform.OS === 'ios' ? field : null);
+    setDatePickerFor(Platform.OS === 'ios' ? 'month' : null);
     if (!selected) return;
-    if (field === 'month') setMonth(selected);
-    if (field === 'paymentDate') setPaymentDate(selected);
+    setMonth(selected);
   };
 
   const handleSubmit = () => {
@@ -191,23 +138,27 @@ const PayrollForm: React.FC<PayrollFormProps> = ({
       Toast.show({ type: 'error', text1: 'Please select an employee' });
       return;
     }
-    if (!basicSalary.trim()) {
-      Toast.show({ type: 'error', text1: 'Please enter a basic salary' });
+    if (!salary.trim() || toNumber(salary) <= 0) {
+      Toast.show({ type: 'error', text1: 'Please enter a valid salary' });
+      return;
+    }
+    if (netSalary <= 0) {
+      Toast.show({
+        type: 'error',
+        text1: 'Net salary must be greater than 0',
+        text2: 'Check salary, arrears, deduction and tax values.',
+      });
       return;
     }
 
     onSubmit({
       employeeId,
       month,
-      basicSalary,
-      allowances,
-      bonus,
-      overtime,
-      deductions,
-      netPay,
-      status,
-      paymentModeId,
-      paymentDate,
+      salary,
+      arrears,
+      deduction,
+      tax,
+      netSalary,
       notes: notes.trim(),
     });
   };
@@ -315,89 +266,15 @@ const PayrollForm: React.FC<PayrollFormProps> = ({
           </TouchableOpacity>
         </View>
 
-        {renderAmountField('Basic Salary', basicSalary, setBasicSalary)}
-        {renderAmountField('Allowances', allowances, setAllowances)}
-        {renderAmountField('Bonus', bonus, setBonus)}
-        {renderAmountField('Overtime', overtime, setOvertime)}
-        {renderAmountField('Deductions', deductions, setDeductions)}
+        {renderAmountField('Salary', salary, setSalary)}
+        {renderAmountField('Arrears', arrears, setArrears)}
+        {renderAmountField('Deduction', deduction, setDeduction)}
+        {renderAmountField('Tax', tax, setTax)}
 
-        {/* Net pay — derived, is liye read-only summary row hai. */}
+        {/* Net salary — derived, is liye read-only summary row hai. */}
         <View style={styles.netPayRow}>
-          <Text style={styles.netPayLabel}>Net Pay</Text>
-          <Text style={styles.netPayValue}>{formatAmount(netPay)}</Text>
-        </View>
-
-        {/* Status */}
-        <View style={styles.field}>
-          <Text style={styles.label}>Status</Text>
-          <TouchableOpacity
-            style={styles.inputRow}
-            activeOpacity={0.7}
-            onPress={() => setOpenDropdown('status')}
-          >
-            <Text style={[styles.input, styles.flex1]}>
-              {selectedStatusLabel}
-            </Text>
-            <Ionicons
-              name="chevron-down"
-              size={width * 0.05}
-              color={colors.gray}
-            />
-          </TouchableOpacity>
-        </View>
-
-        {/* Payment mode */}
-        <View style={styles.field}>
-          <Text style={styles.label}>Payment Mode</Text>
-          <TouchableOpacity
-            style={styles.inputRow}
-            activeOpacity={0.7}
-            onPress={() => setOpenDropdown('paymentMode')}
-          >
-            <Text
-              style={[
-                styles.input,
-                styles.flex1,
-                !selectedPaymentModeLabel && styles.placeholderText,
-              ]}
-            >
-              {selectedPaymentModeLabel || 'Select payment mode'}
-            </Text>
-            {isLoadingOptions ? (
-              <ActivityIndicator size="small" color={colors.gray} />
-            ) : (
-              <Ionicons
-                name="chevron-down"
-                size={width * 0.05}
-                color={colors.gray}
-              />
-            )}
-          </TouchableOpacity>
-        </View>
-
-        {/* Payment date */}
-        <View style={styles.field}>
-          <Text style={styles.label}>Payment Date</Text>
-          <TouchableOpacity
-            style={styles.inputRow}
-            activeOpacity={0.7}
-            onPress={() => setDatePickerFor('paymentDate')}
-          >
-            <Text
-              style={[
-                styles.input,
-                styles.flex1,
-                !paymentDate && styles.placeholderText,
-              ]}
-            >
-              {paymentDate ? formatDate(paymentDate.toISOString()) : 'Not set'}
-            </Text>
-            <Ionicons
-              name="calendar-outline"
-              size={width * 0.05}
-              color={colors.gray}
-            />
-          </TouchableOpacity>
+          <Text style={styles.netPayLabel}>Net Salary</Text>
+          <Text style={styles.netPayValue}>{formatAmount(netSalary)}</Text>
         </View>
 
         {/* Notes */}
@@ -428,10 +305,9 @@ const PayrollForm: React.FC<PayrollFormProps> = ({
 
       {datePickerFor && (
         <DateTimePicker
-          value={
-            (datePickerFor === 'month' ? month : paymentDate) ?? new Date()
-          }
+          value={month}
           mode="date"
+          maximumDate={new Date()}
           display={Platform.OS === 'ios' ? 'spinner' : 'default'}
           onChange={onDateChange}
         />
@@ -453,12 +329,12 @@ const PayrollForm: React.FC<PayrollFormProps> = ({
             contentContainerStyle={styles.dropdownContent}
             keyboardShouldPersistTaps="handled"
           >
-            {dropdownOptions.length === 0 ? (
+            {employeeOptions.length === 0 ? (
               <Text style={styles.dropdownEmptyText}>
                 No options available yet.
               </Text>
             ) : (
-              dropdownOptions.map(option => (
+              employeeOptions.map(option => (
                 <TouchableOpacity
                   key={option.value}
                   style={styles.dropdownOption}
@@ -467,13 +343,13 @@ const PayrollForm: React.FC<PayrollFormProps> = ({
                   <Text
                     style={[
                       styles.dropdownOptionText,
-                      option.value === selectedDropdownValue &&
+                      option.value === employeeId &&
                         styles.dropdownOptionTextSelected,
                     ]}
                   >
                     {option.label}
                   </Text>
-                  {option.value === selectedDropdownValue && (
+                  {option.value === employeeId && (
                     <Ionicons
                       name="checkmark"
                       size={width * 0.05}

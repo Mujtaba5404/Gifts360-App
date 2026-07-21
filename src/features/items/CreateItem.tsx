@@ -8,7 +8,6 @@ import ItemForm, { ItemFormValues } from './ItemForm';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
-/** Khali string ko 0 maan lo — backend numbers expect karta hai. */
 const toNumber = (value: string) => {
   const parsed = Number(value.trim());
   return isNaN(parsed) ? 0 : parsed;

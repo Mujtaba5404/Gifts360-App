@@ -9,12 +9,6 @@ const dedupeById = (list: ItemPicklistValue[]): ItemPicklistValue[] => {
   return [...byId.values()].sort((a, b) => a.title.localeCompare(b.title));
 };
 
-/**
- * Category/unit picklists ka apna koi endpoint nahi hai (wahi masla jaisa
- * expenses aur sales orders mein hai), is liye options mojooda items ke
- * populated objects se bante hain — un par asli _id hota hai jo create/update
- * ke waqt bhejna zaroori hai.
- */
 export const getItemPicklistOptions = (
   items: Item[],
   field: 'category' | 'unit',

@@ -65,7 +65,6 @@ export type SalesOrderStatus =
   | 'cancelled'
   | 'returned';
 
-// Confirmed from real responses: 'pending', 'confirmed'.
 export type SalesOrderPaymentStatus =
   | 'pending'
   | 'confirmed'
@@ -156,7 +155,6 @@ export interface CreateSalesOrderPayload {
   orderDate: string;
   orderStatus?: SalesOrderStatus;
   paymentStatus?: SalesOrderPaymentStatus;
-  /** Picklist / user references — sirf _id bheja jata hai. */
   paymentMode?: string;
   paymentDate?: string;
   occasion?: string;

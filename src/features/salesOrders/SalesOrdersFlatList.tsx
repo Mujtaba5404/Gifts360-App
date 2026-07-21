@@ -264,7 +264,8 @@ const SalesOrdersFlatList = () => {
       </View>
 
       <AddFab
-        label="Add Sales Order"
+        label="Add"
+        subtitle="Sales Order"
         onPress={() => navigation.navigate('CreateSalesOrder')}
         bottom={height * 0.065}
         fabWidth={width * 0.4}
@@ -272,7 +273,6 @@ const SalesOrdersFlatList = () => {
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

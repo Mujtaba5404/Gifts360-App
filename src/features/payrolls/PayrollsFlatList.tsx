@@ -1,3 +1,4 @@
+// PayrollsFlatList.tsx
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@react-native-vector-icons/ionicons';
@@ -24,25 +25,22 @@ import { formatMonth } from './options';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
-const STATUS_META: Record<
-  Payroll['status'],
-  { label: string; color: string; bg: string }
-> = {
-  unpaid: { label: 'Unpaid', color: '#B54708', bg: '#FFF4E5' },
-  paid: { label: 'Paid', color: '#2B8A3E', bg: '#E8F7EC' },
-};
-
 const PAGE_SIZE = 100;
+
+// Employee ka naam `personal.firstName` + `personal.lastName` se banta hai.
+const getEmployeeName = (employee?: Payroll['employee']) =>
+  [employee?.personal?.firstName, employee?.personal?.lastName]
+    .filter(Boolean)
+    .join(' ') || 'Unknown employee';
+
+const getEmployeeDesignation = (employee?: Payroll['employee']) =>
+  employee?.organization?.designation?.title;
 
 const PayrollsFlatList = () => {
   const navigation = useNavigation<Nav>();
   const [query, setQuery] = useState('');
 
-  const { data, isLoading, isError, error, refetch, isRefetching } =
-    usePayrolls({
-      page: 1,
-      pageSize: PAGE_SIZE,
-    });
+  const { data, isLoading, isError, error, refetch, isRefetching } = usePayrolls({ page: 1, pageSize: PAGE_SIZE});
 
   const payrolls = data?.data ?? [];
 
@@ -50,7 +48,11 @@ const PayrollsFlatList = () => {
     const q = query.trim().toLowerCase();
     if (!q) return payrolls;
     return payrolls.filter(row => {
-      const haystack = [row.employee?.name, formatMonth(row.month)]
+      const haystack = [
+        getEmployeeName(row.employee),
+        getEmployeeDesignation(row.employee),
+        formatMonth(row.month),
+      ]
         .filter(Boolean)
         .join(' ')
         .toLowerCase();
@@ -59,7 +61,7 @@ const PayrollsFlatList = () => {
   }, [payrolls, query]);
 
   const renderItem = ({ item }: { item: Payroll }) => {
-    const statusMeta = STATUS_META[item.status] ?? STATUS_META.unpaid;
+    const designation = getEmployeeDesignation(item.employee);
 
     return (
       <TouchableOpacity
@@ -80,16 +82,11 @@ const PayrollsFlatList = () => {
 
           <View style={styles.info}>
             <Text style={styles.employeeName} numberOfLines={1}>
-              {capitalizeLetters(item.employee?.name ?? 'Unknown employee')}
+              {capitalizeLetters(getEmployeeName(item.employee))}
             </Text>
             <Text style={styles.month} numberOfLines={1}>
               {formatMonth(item.month)}
-            </Text>
-          </View>
-
-          <View style={[styles.statusBadge, { backgroundColor: statusMeta.bg }]}>
-            <Text style={[styles.statusText, { color: statusMeta.color }]}>
-              {statusMeta.label}
+              {designation ? ` · ${capitalizeLetters(designation)}` : ''}
             </Text>
           </View>
         </View>
@@ -98,27 +95,27 @@ const PayrollsFlatList = () => {
 
         <View style={styles.statsStrip}>
           <View style={styles.statBox}>
-            <Text style={styles.statLabel}>Basic</Text>
+            <Text style={styles.statLabel}>Salary</Text>
             <Text style={styles.statValue}>
-              {formatAmount(item.basicSalary)}
+              {formatAmount(item.salary)}
             </Text>
           </View>
 
           <View style={styles.statDivider} />
 
           <View style={styles.statBox}>
-            <Text style={styles.statLabel}>Deductions</Text>
+            <Text style={styles.statLabel}>Deduction</Text>
             <Text style={styles.statValue}>
-              {formatAmount(item.deductions)}
+              {formatAmount(item.deduction)}
             </Text>
           </View>
 
           <View style={styles.statDivider} />
 
           <View style={styles.statBox}>
-            <Text style={styles.statLabel}>Net Pay</Text>
+            <Text style={styles.statLabel}>Net Salary</Text>
             <Text style={[styles.statValue, styles.netPayValue]}>
-              {formatAmount(item.netPay)}
+              {formatAmount(item.netSalary)}
             </Text>
           </View>
         </View>
@@ -144,7 +141,6 @@ const PayrollsFlatList = () => {
             color={colors.lightGray}
           />
           <Text style={styles.emptyText}>Failed to load payrolls.</Text>
-          {/* Asal server message dikhao — warna status code debugging mein atak jati hai. */}
           {!!error?.message && (
             <Text style={styles.errorDetail}>{error.message}</Text>
           )}
@@ -339,16 +335,6 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.UrbanistMedium,
     color: colors.gray,
     marginTop: 2,
-  },
-  statusBadge: {
-    paddingHorizontal: width * 0.02,
-    paddingVertical: height * 0.005,
-    borderRadius: 20,
-  },
-  statusText: {
-    fontSize: fontSizes.xs,
-    fontFamily: fontFamily.UrbanistBold,
-    fontWeight: '600',
   },
   divider: {
     height: 1,

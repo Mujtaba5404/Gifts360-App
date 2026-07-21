@@ -24,13 +24,11 @@ import { getItemPicklistOptions } from './options';
 
 type OpenDropdown = 'category' | 'unit' | null;
 
-/** Form ki poori state — submit par screen ko isi shape mein values milti hain. */
 export interface ItemFormValues {
   title: string;
   categoryId: string;
   unitId: string;
   description: string;
-  /** Numbers form mein string rehte hain; screen submit par Number() karti hai. */
   sellingPrice: string;
   costPrice: string;
   reorderLevel: string;
@@ -41,8 +39,6 @@ export interface ItemFormProps {
   headerText: string;
   submitText: string;
   submittingText: string;
-
-  /** Edit mode mein record load hone ke baad pre-fill ke liye. */
   initialValues?: Partial<ItemFormValues>;
   isLoadingInitial?: boolean;
   hasLoadError?: boolean;
@@ -63,7 +59,6 @@ const ItemForm: React.FC<ItemFormProps> = ({
   isPending,
   onSubmit,
 }) => {
-  // Category/unit ke options mojooda items se aate hain (koi picklist API nahi hai).
   const { data: itemsData, isLoading: isLoadingOptions } = useItems({
     page: 1,
     pageSize: 500,
@@ -88,11 +83,6 @@ const ItemForm: React.FC<ItemFormProps> = ({
   const [reorderLevel, setReorderLevel] = useState('');
   const [isPerishable, setIsPerishable] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<OpenDropdown>(null);
-
-  // Edit mode: record aane ke baad form ko ek dafa pre-fill karna hai.
-  // NOTE: `false` se shuru hona zaroori hai — edit screen par pehle render mein
-  // initialValues undefined hoti hai (record load ho raha hota hai), to
-  // `!initialValues` flag ko true kar deta tha aur prefill kabhi chalta hi nahi tha.
   const [isPrefilled, setIsPrefilled] = useState(false);
 
   useEffect(() => {
@@ -138,7 +128,6 @@ const ItemForm: React.FC<ItemFormProps> = ({
     });
   };
 
-  // Edit mode: jab tak record load ho raha hai, form ke bajaye loader dikhao.
   if (isLoadingInitial) {
     return (
       <View style={styles.container}>

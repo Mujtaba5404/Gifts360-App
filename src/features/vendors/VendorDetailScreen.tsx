@@ -31,7 +31,7 @@ import { fontSizes } from '../../utils/fontSizes';
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 type DetailRoute = RouteProp<RootStackParamList, 'VendorDetailScreen'>;
 
-/** Wahi red jo baaki detail screens par hai — palette ek jaisa rahe. */
+
 const DANGER_COLOR = '#C2255C';
 const DANGER_TINT = '#FDECF1';
 const EDIT_TINT = '#EDF0FE';
@@ -71,7 +71,6 @@ const VendorDetailScreen = () => {
     useVendor(vendorId);
   const { deleteVendor, isPending: isDeleting } = useDeleteVendor();
 
-  // API record ko kabhi `data` ke andar bhejta hai, kabhi top level par.
   const vendor = ((data as any)?.data ?? data) as Vendor | undefined;
 
   const onEdit = () => {
@@ -91,7 +90,6 @@ const VendorDetailScreen = () => {
           onPress: async () => {
             try {
               const res = await deleteVendor({ id: vendorId });
-              // List ko refresh karwao warna delete hua record wahin dikhta rahega.
               await queryClient.invalidateQueries({ queryKey: ['vendor'] });
 
               Toast.show({
@@ -152,8 +150,8 @@ const VendorDetailScreen = () => {
   }
 
   const type = pickText(vendor.type);
-  const categories = vendor.categories ?? [];
-  const services = vendor.services ?? [];
+  const categories = (vendor.categories ?? []).map((c: any) => c.title).filter(Boolean);
+  const services = (vendor.services ?? []).map((s: any) => s.title).filter(Boolean);
   const address = formatAddress(vendor.address);
 
   return (
@@ -167,7 +165,7 @@ const VendorDetailScreen = () => {
           <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
         }
       >
-        {/* Vendor profile — pehchan aur ahem numbers ek nazar mein. */}
+
         <View style={styles.profileCard}>
           <View style={styles.profileActions}>
             <TouchableOpacity
@@ -277,12 +275,12 @@ const VendorDetailScreen = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Address</Text>
           <View style={styles.card}>
-            <DetailRow label="Street" value={vendor.address?.line1 || '-'} />
-            <DetailRow label="City" value={vendor.address?.city || '-'} />
-            <DetailRow label="State" value={vendor.address?.state || '-'} />
+            <DetailRow label="Street" value={capitalizeLetters(vendor.address?.line1 || '-')} />
+            <DetailRow label="City" value={capitalizeLetters(vendor.address?.city || '-')} />
+            <DetailRow label="State" value={capitalizeLetters(vendor.address?.stateCode || '-')} />
             <DetailRow
               label="Country"
-              value={vendor.address?.country || '-'}
+              value={capitalizeLetters(vendor.address?.countryCode || '-')}
               isLast
             />
           </View>
@@ -324,7 +322,7 @@ const VendorDetailScreen = () => {
                   : '-'
               }
             />
-            <DetailRow label="Full Address" value={address || '-'} isLast />
+            <DetailRow label="Full Address" value={capitalizeLetters(address || '-')} isLast />
           </View>
         </View>
       </ScrollView>

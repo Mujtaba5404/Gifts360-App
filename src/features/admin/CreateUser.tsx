@@ -16,7 +16,6 @@ const CreateUser = ({ navigation }: Props) => {
   const queryClient = useQueryClient();
   const { createUser, isPending } = useCreateUser();
 
-  // Role/brand ke options mojooda users se aate hain.
   const { data: usersData, isLoading: isLoadingOptions } = useUsers({
     page: 1,
     pageSize: 100,
