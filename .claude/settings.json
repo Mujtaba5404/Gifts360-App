@@ -11,7 +11,14 @@
       "Bash(node -e ' *)",
       "Bash(perl -0pi -e \"s/import \\\\{ getAvatarColor, getInitials, pickText \\\\} from '..\\\\/..\\\\/utils\\\\/display';/import {\\\\n  formatAddress,\\\\n  getAvatarColor,\\\\n  getInitials,\\\\n  pickText,\\\\n} from '..\\\\/..\\\\/utils\\\\/display';/\" features/customers/CustomersFlatList.tsx features/vendors/VendorsFlatList.tsx)",
       "Bash(perl -0pi -e 's/formatAddress\\\\\\(customer\\\\\\)/formatAddress\\(customer.address\\)/g; s/formatAddress\\\\\\(item\\\\\\)/formatAddress\\(item.address\\)/g' features/customers/CustomersFlatList.tsx)",
-      "Bash(perl -0pi -e 's/formatAddress\\\\\\(vendor\\\\\\)/formatAddress\\(vendor.address\\)/g; s/formatAddress\\\\\\(item\\\\\\)/formatAddress\\(item.address\\)/g' features/vendors/VendorsFlatList.tsx)"
+      "Bash(perl -0pi -e 's/formatAddress\\\\\\(vendor\\\\\\)/formatAddress\\(vendor.address\\)/g; s/formatAddress\\\\\\(item\\\\\\)/formatAddress\\(item.address\\)/g' features/vendors/VendorsFlatList.tsx)",
+      "Bash(ls -lt ~/Downloads 2>/dev/null | head -20; echo \"=== repo-level image folders ===\"; find . -path ./node_modules -prune -o -iname \"*gifts360*\" -print -o -iname \"*logo*\" -print 2>/dev/null | head -20)",
+      "Read(//Users/saadshafi/Downloads/**)",
+      "Bash(cd ~/Downloads/IconKitchen-Output && find . -type f | sort | head -60; echo \"=== total ===\"; find . -type f | wc -l)",
+      "Read(//Users/saadshafi/Downloads/IconKitchen-Output/**)",
+      "Bash(cd /Users/saadshafi/Desktop/Repos/Gifts360-App; echo \"=== AndroidManifest icon refs ===\"; grep -n \"icon\\\\|roundIcon\" android/app/src/main/AndroidManifest.xml; echo; echo \"=== current ios appiconset ===\"; ls ios/gifts360/Images.xcassets/AppIcon.appiconset/; echo; echo \"=== current ios Contents.json \\(head\\) ===\"; head -30 ios/gifts360/Images.xcassets/AppIcon.appiconset/Contents.json; echo; echo \"=== new ios Contents.json \\(head\\) ===\"; head -30 ~/Downloads/IconKitchen-Output/ios/Contents.json)",
+      "Read(//Users/saadshafi/Downloads/IconKitchen-Output/ios/**)",
+      "Bash(python3 -c \"import PIL; print\\('PIL', PIL.__version__\\)\")"
     ]
   }
 }
