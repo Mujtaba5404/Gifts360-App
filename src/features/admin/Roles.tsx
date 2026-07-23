@@ -1,6 +1,6 @@
+import { Ionicons } from '@react-native-vector-icons/ionicons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Ionicons } from '@react-native-vector-icons/ionicons';
 import { useMemo, useState } from 'react';
 import {
   FlatList,
@@ -22,10 +22,6 @@ import { Role, useRoles } from './RolesContext';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
-/**
- * Har role ke permissions ka khulasa — kitne resources par access hai aur
- * kul kitni actions allowed hain.
- */
 const summarizePermissions = (role: Role) => {
   const entries = Object.values(role.permissions ?? {});
   const grantedActions = entries.reduce(
@@ -41,7 +37,7 @@ const summarizePermissions = (role: Role) => {
 
 const Roles = () => {
   const navigation = useNavigation<Nav>();
-  const { roles } = useRoles();
+  const { roles, isLoading, isError, refetchRoles } = useRoles();
   const [query, setQuery] = useState('');
 
   const filteredRoles = useMemo(() => {
@@ -148,9 +144,7 @@ const Roles = () => {
             size={width * 0.14}
             color={colors.lightGray}
           />
-          <Text style={styles.emptyText}>
-            No roles match "{query.trim()}".
-          </Text>
+          <Text style={styles.emptyText}>No roles match "{query.trim()}".</Text>
         </View>
       );
     }

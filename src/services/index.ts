@@ -134,16 +134,6 @@ instance.interceptors.request.use(
       delete (config.headers as Record<string, unknown>).authorization;
     }
 
-    if (__DEV__) {
-  console.log('\n================ API REQUEST ================');
-  console.log('URL:', `${config.baseURL}${config.url}`);
-  console.log('METHOD:', config.method?.toUpperCase());
-  console.log('HEADERS:', config.headers);
-  console.log('PARAMS:', config.params);
-  console.log('BODY:', config.data);
-  console.log('=============================================\n');
-}
-
     return config;
   },
   error => {
@@ -184,33 +174,12 @@ const buildApiError = (error: any): ApiError => {
   apiError.status = status;
   apiError.data = data;
 
-  if (__DEV__) {
-    console.log('[api] request failed', {
-      method: error?.config?.method,
-      url: error?.config?.url,
-      status,
-      data,
-    });
-  }
-
   return apiError;
 };
 
 instance.interceptors.response.use(
   (response: AxiosResponse) => {
     store.dispatch(hideLoader('idle'));
-
-    if (__DEV__) {
-      console.log('\n================ API RESPONSE ================');
-      console.log(
-        'URL:',
-        `${response.config.baseURL ?? ''}${response.config.url ?? ''}`,
-      );
-      console.log('STATUS:', response.status);
-      console.log('HEADERS:', response.headers);
-      console.log('DATA:', response.data);
-      console.log('=============================================\n');
-    }
 
     return response;
   },
@@ -265,16 +234,6 @@ instance.interceptors.response.use(
         });
       });
     }
-
-    if (__DEV__) {
-  console.log('\n================ API ERROR ==================');
-  console.log('URL:', error?.config?.baseURL + error?.config?.url);
-  console.log('METHOD:', error?.config?.method?.toUpperCase());
-  console.log('STATUS:', error?.response?.status);
-  console.log('HEADERS:', error?.response?.headers);
-  console.log('RESPONSE:', error?.response?.data);
-  console.log('=============================================\n');
-}
 
     return Promise.reject(buildApiError(error));
   },

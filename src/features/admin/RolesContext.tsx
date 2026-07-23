@@ -1,11 +1,11 @@
 import {
   createContext,
   ReactNode,
+  useCallback,
   useContext,
   useMemo,
-  useRef,
-  useState,
 } from 'react';
+import { useCreateRole, useUpdateRole,useRolesList,useDeleteRole,CreateRolePayload } from '../../api/useRoles';
 
 export interface ResourcePermissions {
   create: boolean;
@@ -26,30 +26,89 @@ type NewRole = Omit<Role, 'id'>;
 
 interface RolesContextValue {
   roles: Role[];
-  addRole: (role: NewRole) => void;
-  updateRole: (id: string, changes: Partial<NewRole>) => void;
+  isLoading: boolean;
+  isError: boolean;
+  refetchRoles: () => void;
+  addRole: (role: NewRole) => Promise<void>;
+  updateRole: (id: string, changes: Partial<NewRole>) => Promise<void>;
+  deleteRole: (id: string) => Promise<void>;
+  isSubmitting: boolean;
 }
 
 const RolesContext = createContext<RolesContextValue | undefined>(undefined);
 
+const toPayload = (role: NewRole | Partial<NewRole>): CreateRolePayload => ({
+  title: role.title ?? '',
+  scope: role.scope ?? '',
+  indexPath: role.indexPath ?? '',
+  permissions: role.permissions ?? {},
+});
+
 export const RolesProvider = ({ children }: { children: ReactNode }) => {
-  const [roles, setRoles] = useState<Role[]>([]);
-  const idRef = useRef(0);
+  const { data, isLoading, isError, refetch} = useRolesList();
+  const { createRole, isPending: isCreating } = useCreateRole();
+  const { updateRole: updateRoleApi, isPending: isUpdating } = useUpdateRole();
+  const { deleteRole: deleteRoleApi, isPending: isDeleting } = useDeleteRole();
+
+  const roles: Role[] = useMemo(
+    () =>
+      (data?.data ?? []).map(r => ({
+        id: r._id,
+        title: r.title,
+        scope: r.scope,
+        indexPath: r.indexPath,
+        permissions: r.permissions,
+      })),
+    [data],
+  );
+
+  const addRole = useCallback(
+    async (role: NewRole) => {
+      await createRole(toPayload(role));
+      refetch();
+    },
+    [createRole, refetch],
+  );
+
+  const updateRole = useCallback(
+    async (id: string, changes: Partial<NewRole>) => {
+      await updateRoleApi({ id, ...toPayload(changes) });
+      refetch();
+    },
+    [updateRoleApi, refetch],
+  );
+
+  const deleteRole = useCallback(
+    async (id: string) => {
+      await deleteRoleApi({ id });
+      refetch();
+    },
+    [deleteRoleApi, refetch],
+  );
 
   const value = useMemo<RolesContextValue>(
     () => ({
       roles,
-      addRole: role => {
-        idRef.current += 1;
-        setRoles(prev => [{ id: String(idRef.current), ...role }, ...prev]);
-      },
-      updateRole: (id, changes) => {
-        setRoles(prev =>
-          prev.map(role => (role.id === id ? { ...role, ...changes } : role)),
-        );
-      },
+      isLoading,
+      isError,
+      refetchRoles: refetch,
+      addRole,
+      updateRole,
+      deleteRole,
+      isSubmitting: isCreating || isUpdating || isDeleting,
     }),
-    [roles],
+    [
+      roles,
+      isLoading,
+      isError,
+      refetch,
+      addRole,
+      updateRole,
+      deleteRole,
+      isCreating,
+      isUpdating,
+      isDeleting,
+    ],
   );
 
   return (

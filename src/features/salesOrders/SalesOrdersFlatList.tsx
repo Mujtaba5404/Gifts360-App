@@ -56,6 +56,8 @@ const SalesOrdersFlatList = () => {
   }, [data?.meta?.totalCount, pageSize]);
 
   const salesOrders = data?.data ?? [];
+  const salesOrdersCount = data?.meta?.totalCount ?? 0;
+
 
   const filteredOrders = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -217,13 +219,8 @@ const SalesOrdersFlatList = () => {
         maxToRenderPerBatch={12}
         windowSize={9}
         removeClippedSubviews
-        ListHeaderComponent={
-          <Text style={styles.countText}>
-            {filteredOrders.length}{' '}
-            {filteredOrders.length === 1 ? 'order' : 'orders'}
-            {query.trim() ? ' found' : ''}
-          </Text>
-        }
+                ListHeaderComponent={<Text>{salesOrdersCount} salesOrder(s)</Text>}
+
       />
     );
   };

@@ -27,7 +27,7 @@ type Nav = NativeStackNavigationProp<RootStackParamList>;
 
 const PAGE_SIZE = 100;
 
-// Employee ka naam `personal.firstName` + `personal.lastName` se banta hai.
+
 const getEmployeeName = (employee?: Payroll['employee']) =>
   [employee?.personal?.firstName, employee?.personal?.lastName]
     .filter(Boolean)
@@ -43,6 +43,8 @@ const PayrollsFlatList = () => {
   const { data, isLoading, isError, error, refetch, isRefetching } = usePayrolls({ page: 1, pageSize: PAGE_SIZE});
 
   const payrolls = data?.data ?? [];
+  const payrollsCount = data?.meta?.totalCount ?? 0;
+
 
   const filteredPayrolls = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -200,6 +202,8 @@ const PayrollsFlatList = () => {
         maxToRenderPerBatch={12}
         windowSize={9}
         removeClippedSubviews
+        ListHeaderComponent={<Text>{payrollsCount} payroll(s)</Text>}
+
       />
     );
   };

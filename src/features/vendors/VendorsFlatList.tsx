@@ -34,8 +34,16 @@ const SkeletonCard = () => {
   useEffect(() => {
     const loop = Animated.loop(
       Animated.sequence([
-        Animated.timing(opacity, { toValue: 1, duration: 700, useNativeDriver: true }),
-        Animated.timing(opacity, { toValue: 0.4, duration: 700, useNativeDriver: true }),
+        Animated.timing(opacity, {
+          toValue: 1,
+          duration: 700,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacity, {
+          toValue: 0.4,
+          duration: 700,
+          useNativeDriver: true,
+        }),
       ]),
     );
     loop.start();
@@ -68,10 +76,10 @@ const VendorsFlatList = () => {
 
   const { data, isLoading, isError, refetch, isRefetching } = useVendors({
     page: 1,
-    pageSize: 180,
   });
 
   const vendors = data?.data ?? [];
+  const vendorsCount = data?.meta?.totalCount ?? 0;
 
   const filteredVendors = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -108,7 +116,10 @@ const VendorsFlatList = () => {
       >
         <View style={styles.cardTopRow}>
           <View
-            style={[styles.avatar, { backgroundColor: getAvatarColor(item._id) }]}
+            style={[
+              styles.avatar,
+              { backgroundColor: getAvatarColor(item._id) },
+            ]}
           >
             <Text style={styles.avatarText}>{getInitials(item.title)}</Text>
           </View>
@@ -121,7 +132,11 @@ const VendorsFlatList = () => {
             <View style={styles.badgeRow}>
               {!!subtitle && (
                 <View style={styles.typeBadge}>
-                  <Ionicons name="pricetag" size={width * 0.028} color={colors.mantineBlue} />
+                  <Ionicons
+                    name="pricetag"
+                    size={width * 0.028}
+                    color={colors.mantineBlue}
+                  />
                   <Text style={styles.typeBadgeText} numberOfLines={1}>
                     {subtitle}
                   </Text>
@@ -130,12 +145,13 @@ const VendorsFlatList = () => {
 
               {typeof item.vendorPercentage === 'number' && (
                 <View style={styles.percentageBadge}>
-                  <Text style={styles.percentageText}>{item.vendorPercentage}%</Text>
+                  <Text style={styles.percentageText}>
+                    {item.vendorPercentage}%
+                  </Text>
                 </View>
               )}
             </View>
           </View>
-
         </View>
 
         <View style={styles.divider} />
@@ -143,7 +159,11 @@ const VendorsFlatList = () => {
         <View style={styles.cardBottom}>
           {!!item.phone && (
             <View style={styles.metaRow}>
-              <Ionicons name="call-outline" size={width * 0.034} color={colors.gray} />
+              <Ionicons
+                name="call-outline"
+                size={width * 0.034}
+                color={colors.gray}
+              />
               <Text style={styles.meta} numberOfLines={1}>
                 {item.phone}
               </Text>
@@ -152,7 +172,11 @@ const VendorsFlatList = () => {
 
           {!!address && (
             <View style={styles.metaRow}>
-              <Ionicons name="location-outline" size={width * 0.034} color={colors.gray} />
+              <Ionicons
+                name="location-outline"
+                size={width * 0.034}
+                color={colors.gray}
+              />
               <Text style={styles.meta} numberOfLines={1} ellipsizeMode="tail">
                 {address}
               </Text>
@@ -163,17 +187,27 @@ const VendorsFlatList = () => {
             <View style={styles.countRow}>
               {categoriesCount > 0 && (
                 <View style={styles.countChip}>
-                  <Ionicons name="grid-outline" size={width * 0.03} color={colors.mantineBlue} />
+                  <Ionicons
+                    name="grid-outline"
+                    size={width * 0.03}
+                    color={colors.mantineBlue}
+                  />
                   <Text style={styles.countChipText}>
-                    {categoriesCount} {categoriesCount === 1 ? 'category' : 'categories'}
+                    {categoriesCount}{' '}
+                    {categoriesCount === 1 ? 'category' : 'categories'}
                   </Text>
                 </View>
               )}
               {servicesCount > 0 && (
                 <View style={styles.countChip}>
-                  <Ionicons name="construct-outline" size={width * 0.03} color={colors.mantineBlue} />
+                  <Ionicons
+                    name="construct-outline"
+                    size={width * 0.03}
+                    color={colors.mantineBlue}
+                  />
                   <Text style={styles.countChipText}>
-                    {servicesCount} {servicesCount === 1 ? 'service' : 'services'}
+                    {servicesCount}{' '}
+                    {servicesCount === 1 ? 'service' : 'services'}
                   </Text>
                 </View>
               )}
@@ -193,10 +227,16 @@ const VendorsFlatList = () => {
       return (
         <View style={styles.centerState}>
           <View style={styles.errorIconWrap}>
-            <Ionicons name="cloud-offline-outline" size={width * 0.12} color={colors.mantineBlue} />
+            <Ionicons
+              name="cloud-offline-outline"
+              size={width * 0.12}
+              color={colors.mantineBlue}
+            />
           </View>
           <Text style={styles.emptyTitle}>Couldn't load vendors</Text>
-          <Text style={styles.emptyText}>Check your connection and try again.</Text>
+          <Text style={styles.emptyText}>
+            Check your connection and try again.
+          </Text>
           <CustomButton
             text="Retry"
             onPress={() => refetch()}
@@ -214,10 +254,16 @@ const VendorsFlatList = () => {
       return (
         <View style={styles.centerState}>
           <View style={styles.errorIconWrap}>
-            <Ionicons name="people-outline" size={width * 0.12} color={colors.mantineBlue} />
+            <Ionicons
+              name="people-outline"
+              size={width * 0.12}
+              color={colors.mantineBlue}
+            />
           </View>
           <Text style={styles.emptyTitle}>No vendors yet</Text>
-          <Text style={styles.emptyText}>Add your first vendor to get started.</Text>
+          <Text style={styles.emptyText}>
+            Add your first vendor to get started.
+          </Text>
           <CustomButton
             text="Add Vendor"
             onPress={() => navigation.navigate('CreateVendor')}
@@ -234,8 +280,14 @@ const VendorsFlatList = () => {
     if (filteredVendors.length === 0) {
       return (
         <View style={styles.centerState}>
-          <Ionicons name="search-outline" size={width * 0.14} color={colors.lightGray} />
-          <Text style={styles.emptyText}>No vendors match "{query.trim()}".</Text>
+          <Ionicons
+            name="search-outline"
+            size={width * 0.14}
+            color={colors.lightGray}
+          />
+          <Text style={styles.emptyText}>
+            No vendors match "{query.trim()}".
+          </Text>
         </View>
       );
     }
@@ -255,13 +307,8 @@ const VendorsFlatList = () => {
         maxToRenderPerBatch={12}
         windowSize={9}
         removeClippedSubviews
-        ListHeaderComponent={
-          <Text style={styles.countText}>
-            {filteredVendors.length}{' '}
-            {filteredVendors.length === 1 ? 'vendor' : 'vendors'}
-            {query.trim() ? ' found' : ''}
-          </Text>
-        }
+        ListHeaderComponentStyle={{ paddingTop: 16 }}
+        ListHeaderComponent={<Text>{vendorsCount} vendor(s)</Text>}
       />
     );
   };
@@ -288,7 +335,11 @@ const VendorsFlatList = () => {
             />
             {query.length > 0 && (
               <TouchableOpacity onPress={() => setQuery('')} hitSlop={8}>
-                <Ionicons name="close-circle" size={width * 0.05} color={colors.gray} />
+                <Ionicons
+                  name="close-circle"
+                  size={width * 0.05}
+                  color={colors.gray}
+                />
               </TouchableOpacity>
             )}
           </View>
@@ -506,12 +557,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border,
   },
   countText: {
-  marginTop: height * 0.02,
-  marginBottom: height * 0.012,
-  color: colors.gray,
-  fontSize: fontSizes.sm,
-  fontFamily: fontFamily.UrbanistMedium,
-},
+    marginTop: height * 0.02,
+    marginBottom: height * 0.012,
+    color: colors.gray,
+    fontSize: fontSizes.sm,
+    fontFamily: fontFamily.UrbanistMedium,
+  },
 });
 
 export default VendorsFlatList;

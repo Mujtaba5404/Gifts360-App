@@ -28,7 +28,6 @@ interface RoleFormProps {
   onSubmit: (values: RoleFormValues) => void;
 }
 
-// Placeholder option sets (replace with real data when the backend is wired).
 const SCOPE_OPTIONS = ['Global', 'Brand', 'Organization'];
 const PERMISSION_RESOURCES = ['BoxSpecification', 'BoxStyle', 'Brand'];
 const PERMISSION_ACTIONS: { key: keyof ResourcePermissions; label: string }[] =

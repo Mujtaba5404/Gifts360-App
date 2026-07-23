@@ -28,7 +28,6 @@ import capitalizeLetters from '../../utils/capitalizeLetters';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
-const CUSTOMERS_PAGE_SIZE = 500;
 
 const SkeletonCard = () => {
   const opacity = useRef(new Animated.Value(0.4)).current;
@@ -68,12 +67,10 @@ const CustomersFlatList = () => {
   const navigation = useNavigation<Nav>();
   const [query, setQuery] = useState('');
 
-  const { data, isLoading, isError, refetch, isRefetching } = useCustomers({
-    page: 1,
-    pageSize: CUSTOMERS_PAGE_SIZE,
-  });
+  const { data, isLoading, isError, refetch, isRefetching } = useCustomers({page: 1});
 
   const customers = data?.data ?? [];
+  const customersCount = data?.meta?.totalCount ?? 0;
 
   const filteredCustomers = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -247,13 +244,8 @@ const CustomersFlatList = () => {
         maxToRenderPerBatch={12}
         windowSize={9}
         removeClippedSubviews
-        ListHeaderComponent={
-          <Text style={styles.countText}>
-            {filteredCustomers.length}{' '}
-            {filteredCustomers.length === 1 ? 'customer' : 'customers'}
-            {query.trim() ? ' found' : ''}
-          </Text>
-        }
+        ListHeaderComponentStyle={{ paddingTop: 16 }}
+        ListHeaderComponent={<Text>{customersCount} customer(s)</Text>}
       />
     );
   };

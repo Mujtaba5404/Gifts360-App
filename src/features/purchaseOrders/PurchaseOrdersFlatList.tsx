@@ -24,7 +24,10 @@ import formatAmount from '../../utils/formatAmount';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
-const STATUS_META: Record<PurchaseOrder['paymentStatus'],{ label: string; color: string; bg: string }> = {
+const STATUS_META: Record<
+  PurchaseOrder['paymentStatus'],
+  { label: string; color: string; bg: string }
+> = {
   pending: { label: 'Pending', color: '#B54708', bg: '#FFF4E5' },
   paid: { label: 'Paid', color: '#2B8A3E', bg: '#E8F7EC' },
   partial: { label: 'Partial', color: '#0C8599', bg: '#E3F8FA' },
@@ -37,17 +40,13 @@ const PurchaseOrdersFlatList = () => {
   const navigation = useNavigation<Nav>();
   const [query, setQuery] = useState('');
   const [pageSize, setPageSize] = useState(INITIAL_PAGE_SIZE);
-  
 
-  const {
-    data,
-    isLoading,
-    isError,
-    refetch,
-    isRefetching,
-  } = usePurchaseOrders({ page: 1, pageSize, });
+  const { data, isLoading, isError, refetch, isRefetching } = usePurchaseOrders(
+    { page: 1},
+  );
 
   const purchaseOrders = data?.data ?? [];
+  const purchaseOrdersCount = data?.meta?.totalCount ?? 0;
 
   const filteredOrders = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -76,9 +75,9 @@ const PurchaseOrdersFlatList = () => {
         style={styles.card}
         activeOpacity={0.6}
         onPress={() =>
-            navigation.navigate('PurchaseOrderDetailScreen', {
-              orderId: item._id,
-            })
+          navigation.navigate('PurchaseOrderDetailScreen', {
+            orderId: item._id,
+          })
         }
       >
         <View style={styles.cardTop}>
@@ -212,11 +211,7 @@ const PurchaseOrdersFlatList = () => {
         windowSize={9}
         removeClippedSubviews
         ListHeaderComponent={
-          <Text style={styles.countText}>
-            {filteredOrders.length}{' '}
-            {filteredOrders.length === 1 ? 'order' : 'orders'}
-            {query.trim() ? ' found' : ''}
-          </Text>
+          <Text>{purchaseOrdersCount} purchaseOrder(s)</Text>
         }
       />
     );

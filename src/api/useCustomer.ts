@@ -44,7 +44,7 @@ export interface GetCustomersParams {
 
 // ---------- GET /customers (list) ----------
 
-export const useCustomers = (params?: GetCustomersParams) => {
+export const useCustomers = (params?: GetCustomersParams,) => {
   return useApiQuery<GetCustomersResponse>(
     ['customers', params],
     {

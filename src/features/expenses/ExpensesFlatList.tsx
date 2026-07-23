@@ -48,13 +48,10 @@ const ExpensesFlatList = () => {
   const navigation = useNavigation<Nav>();
 
   const { data, isLoading, isError, error, refetch, isRefetching } =
-    useExpenses({
-      page: 1,
-      pageSize: 100,
-      sort: '-date',
-    });
+    useExpenses({ page: 1, pageSize: 100, sort: '-date' });
 
   const expenses = data?.data ?? [];
+  const expensesCount = data?.meta?.totalCount ?? 0;
 
   const renderItem = ({ item }: { item: Expense }) => {
     const payeeName = toTitleCase(item.payee);
@@ -159,6 +156,7 @@ const ExpensesFlatList = () => {
         contentContainerStyle={styles.list}
         refreshing={isRefetching}
         onRefresh={refetch}
+        ListHeaderComponent={<Text>{expensesCount} expense(s)</Text>}
         ListEmptyComponent={
           <Text style={styles.emptyText}>No expenses added yet.</Text>
         }
@@ -170,9 +168,7 @@ const ExpensesFlatList = () => {
     <View style={styles.container}>
       <TopHeader text="Expenses" isBack />
 
-      <View style={styles.content}>
-        {renderBody()}
-      </View>
+      <View style={styles.content}>{renderBody()}</View>
 
       <AddFab
         label="Add Expense"

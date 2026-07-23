@@ -45,6 +45,8 @@ const Users = () => {
   });
 
   const users = data?.data ?? [];
+  const usersCount = data?.meta?.totalCount ?? 0;
+
 
   const filteredUsers = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -215,6 +217,8 @@ const Users = () => {
         refreshing={isRefetching}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
+        ListHeaderComponent={<Text>{usersCount} user(s)</Text>}
+
       />
     );
   };

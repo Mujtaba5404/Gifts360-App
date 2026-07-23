@@ -22,8 +22,8 @@ const EditRole = ({ route, navigation }: Props) => {
         <RoleForm
           initialValues={existing}
           submitLabel="Save"
-          onSubmit={values => {
-            updateRole(roleId, values);
+          onSubmit={async values => {
+            await updateRole(roleId, values);
             navigation.goBack();
           }}
         />

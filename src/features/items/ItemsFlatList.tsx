@@ -56,6 +56,8 @@ const ItemsFlatList = () => {
   } = useItems({ page: 1, pageSize: PAGE_SIZE });
 
   const items = data?.data ?? [];
+  const itemsCount = data?.meta?.totalCount ?? 0;
+
 
   const filteredItems = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -260,6 +262,8 @@ const ItemsFlatList = () => {
         maxToRenderPerBatch={12}
         windowSize={9}
         removeClippedSubviews
+        ListHeaderComponent={<Text>{itemsCount} item(s)</Text>}
+
       />
     );
   };

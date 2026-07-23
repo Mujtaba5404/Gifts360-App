@@ -31,7 +31,8 @@ const PettyCashFlatList = () => {
     sort: '-date',
   });
 
-  const rows = data?.data ?? [];
+  const pettyCash = data?.data ?? [];
+  const pettyCashCount = data?.meta?.totalCount ?? 0;
 
   const renderItem = ({ item }: { item: PettyCash }) => {
     const isDebit = item.amount < 0;
@@ -113,17 +114,18 @@ const PettyCashFlatList = () => {
               borderRadius={8}
             />
           </View>
-        ) : rows.length === 0 ? (
+        ) : pettyCash.length === 0 ? (
           <Text style={styles.emptyText}>No petty cash added yet.</Text>
         ) : (
           <FlatList
-            data={rows}
+            data={pettyCash}
             keyExtractor={item => item._id}
             renderItem={renderItem}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.list}
             refreshing={isFetching}
             onRefresh={refetch}
+            ListHeaderComponent={<Text>{pettyCashCount} pettyCash(s)</Text>}
           />
         )}
       </View>

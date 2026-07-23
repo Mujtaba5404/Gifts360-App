@@ -16,8 +16,8 @@ const CreateRole = ({ navigation }: Props) => {
       <TopHeader text="Create Role" isBack />
       <RoleForm
         submitLabel="Create role"
-        onSubmit={values => {
-          addRole(values);
+        onSubmit={async values => {
+          await addRole(values);
           navigation.goBack();
         }}
       />
